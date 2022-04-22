@@ -1,5 +1,7 @@
-todo.txt
-notes.txt
 node_modules/
 npm-debug.log
-.jshintrc
+.travis.yml
+package-lock.json
+test/
+.idea
+*.tgz

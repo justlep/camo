@@ -1,15 +1,11 @@
 'use strict';
 
-const _ = require('lodash');
-const fs = require('fs');
 const expect = require('chai').expect;
 const connect = require('../index').connect;
 const Document = require('../index').Document;
 const isDocument = require('../lib/validate').isDocument;
 const ValidationError = require('../lib/errors').ValidationError;
 const Data = require('./data');
-const getData1 = require('./util').data1;
-const getData2 = require('./util').data2;
 const validateId = require('./util').validateId;
 const fail = require('./util').fail;
 const expectError = require('./util').expectError;
@@ -814,9 +810,9 @@ describe('Document', function() {
 
             let data = Data.create();
 
-            data.save().then(function() {
+            data.save().then(() => new Promise(resolve => setTimeout(resolve, 1))).then(function() {
                 validateId(data);
-                expect(data.date).to.be.lessThan(Date.now());
+                expect(data.date).to.be.lessThan(new Date());
             }).then(done, done);
         });
 

@@ -1,3 +1,12 @@
+## 0.12.5 (2022-04-22)
+
+Features
+- Allow `connect()` to use alternative `Datastore` constructors from any NeDB fork 
+
+Breaking Changes
+- NeDB is no (optional) dependency anymore, must install manually
+
+
 ## 0.12.3 (2016-11-04)
 Bugfixes:
  - Merged PR that allows changes to persist in `postValidate` and `preSave` hooks ([#85](https://github.com/scottwrobinson/camo/pull/85)). Fixes [#43](https://github.com/scottwrobinson/camo/pull/43).

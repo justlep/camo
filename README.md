@@ -1,3 +1,30 @@
+# This is a fork of scottwrobinson's [camo](https://github.com/scottwrobinson/camo)
+[![Build Status](https://api.travis-ci.com/justlep/camo.svg?branch=master)](https://travis-ci.com/justlep/camo)
+[![NPM Version](https://img.shields.io/npm/v/@justlep/camo.svg)](https://www.npmjs.com/package/@justlep/camo)
+[![Node.js Version](https://img.shields.io/node/v/@justlep/camo.svg)]()
+
+Changes: 
+* Updated dependencies with security issues (lodash, mocha)  
+* Removed mongo support altogether, leaving NeDB stuff only
+* Allows using any fork of NeDB, like [@justlep/nedb](https://github.com/justlep/nedb) instead of the original
+  ```javascript
+  import {Datastore} from '@justlep/nedb';
+  
+  await camo.connect('nedb:///path/to/dbfiles', {NedbDatastoreClass: Datastore});
+  ```
+* Removed `nedb` from `optionalDependencies`. Must install manually
+  ```sh
+  # the unmaintained original NeDB v1.8.0
+  npm i --save nedb
+
+  # or for Node 14+ and ESM (see code example above)
+  npm i --save @justlep/nedb    
+  ```
+
+I haven't done any code cleanup or refactoring (yet). 
+
+For a better maintained fork of camo, try https://github.com/Luidog/marpat
+
 # Camo
 
 **Camo needs your help!** Interested in contributing? [Let me know](mailto:s.w.robinson+camo@gmail.com)!
@@ -61,7 +88,7 @@ For a short tutorial on using Camo, check out [this](http://stackabuse.com/getti
 ### Connect to the Database
 Before using any document methods, you must first connect to your underlying database. All supported databases have their own unique URI string used for connecting. The URI string usually describes the network location or file location of the database. However, some databases support more than just network or file locations. NeDB, for example, supports storing data in-memory, which can be specified to Camo via `nedb://memory`. See below for details:
 
-- MongoDB:
+- MongoDB: 
   - Format: mongodb://[username:password@]host[:port][/db-name]
   - Example: `var uri = 'mongodb://scott:abc123@localhost:27017/animals';`
 - NeDB:
@@ -408,7 +435,7 @@ You can contact me with questions, issues, or ideas at either of the following:
 For short questions and faster responses, try Twitter.
 
 ## Copyright & License
-Copyright (c) 2021 Scott Robinson
+Copyright (c) 2016 Scott Robinson
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
