@@ -1,6 +1,6 @@
 {
   "name": "@justlep/camo",
-  "version": "0.12.5",
+  "version": "0.12.6",
   "description": "A class-based ES6 ODM for NeDB (only)",
   "author": {
     "name": "Scott Robinson",
