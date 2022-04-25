@@ -31,7 +31,8 @@
   },
   "license": "MIT",
   "scripts": {
-    "test": "mocha"
+    "test": "mocha",
+    "post_ci": "npm i nedb@1.8.0"
   },
   "engines": {
     "node": ">=12"
