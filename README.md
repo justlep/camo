@@ -1,5 +1,5 @@
 # This is a fork of scottwrobinson's [camo](https://github.com/scottwrobinson/camo)
-[![Build Status](https://api.travis-ci.com/justlep/camo.svg?branch=master)](https://travis-ci.com/justlep/camo)
+[![Build Status](https://api.travis-ci.com/justlep/camo.svg?branch=master)](https://travis-ci.com/github/justlep/camo)
 [![NPM Version](https://img.shields.io/npm/v/@justlep/camo.svg)](https://www.npmjs.com/package/@justlep/camo)
 [![Node.js Version](https://img.shields.io/node/v/@justlep/camo.svg)]()
 
