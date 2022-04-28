@@ -1,48 +1,18 @@
-'use strict';
+import {expect} from 'chai';
+import {Document} from '../lib/document.js';
+import {EmbeddedDocument} from '../lib/embedded-document.js';
+import {validateId} from './util.js';
+import {ValidationError} from '../lib/errors.js';
+import {initMochaHooksForNedb} from './database.js';
 
-const _ = require('lodash');
-const fs = require('fs');
-const expect = require('chai').expect;
-const connect = require('../index').connect;
-const Document = require('../index').Document;
-const EmbeddedDocument = require('../index').EmbeddedDocument;
-const isDocument = require('../lib/validate').isDocument;
-const ValidationError = require('../lib/errors').ValidationError;
-const Data = require('./data');
-const getData1 = require('./util').data1;
-const getData2 = require('./util').data2;
-const validateId = require('./util').validateId;
 
-describe('Embedded', function() {
+describe('Embedded', function () {
 
-    // TODO: Should probably use mock database client...
-    const url = 'nedb://memory';
-    //const url = 'mongodb://localhost/camo_test';
-    let database = null;
+    initMochaHooksForNedb();
 
-    before(function(done) {
-        connect(url).then(function(db) {
-            database = db;
-            return database.dropDatabase();
-        }).then(function() {
-            return done();
-        });
-    });
 
-    beforeEach(function(done) {
-        done();
-    });
-
-    afterEach(function(done) {
-        database.dropDatabase().then(function() {}).then(done, done);
-    });
-
-    after(function(done) {
-        database.dropDatabase().then(function() {}).then(done, done);
-    });
-
-    describe('general', function() {
-        it('should not have an _id', function(done) {
+    describe('general', function () {
+        it('should not have an _id', function (done) {
 
             class EmbeddedModel extends EmbeddedDocument {
                 constructor() {
@@ -55,7 +25,7 @@ describe('Embedded', function() {
                 constructor() {
                     super();
                     this.mod = EmbeddedModel;
-                    this.num = { type: Number };
+                    this.num = {type: Number};
                 }
             }
 
@@ -64,17 +34,17 @@ describe('Embedded', function() {
             data.mod.str = 'some data';
             data.num = 1;
 
-            data.save().then(function() {
+            data.save().then(function () {
                 expect(data.mod._id).to.be.undefined;
-                return DocumentModel.findOne({ num: 1 });
-            }).then(function(d) {
+                return DocumentModel.findOne({num: 1});
+            }).then(function (d) {
                 expect(d.mod._id).to.be.undefined;
             }).then(done, done);
         });
     });
 
-    describe('types', function() {
-        it('should allow embedded types', function(done) {
+    describe('types', function () {
+        it('should allow embedded types', function (done) {
 
             class EmbeddedModel extends EmbeddedDocument {
                 constructor() {
@@ -87,7 +57,7 @@ describe('Embedded', function() {
                 constructor() {
                     super();
                     this.mod = EmbeddedModel;
-                    this.num = { type: Number };
+                    this.num = {type: Number};
                 }
             }
 
@@ -96,10 +66,10 @@ describe('Embedded', function() {
             data.mod.str = 'some data';
             data.num = 1;
 
-            data.save().then(function() {
+            data.save().then(function () {
                 validateId(data);
-                return DocumentModel.findOne({ num: 1 });
-            }).then(function(d) {
+                return DocumentModel.findOne({num: 1});
+            }).then(function (d) {
                 validateId(d);
                 expect(d.num).to.be.equal(1);
                 expect(d.mod).to.be.a('object');
@@ -108,7 +78,7 @@ describe('Embedded', function() {
             }).then(done, done);
         });
 
-    it('should allow array of embedded types', function(done) {
+        it('should allow array of embedded types', function (done) {
 
             class Limb extends EmbeddedDocument {
                 constructor() {
@@ -140,11 +110,11 @@ describe('Embedded', function() {
             person.limbs.push(Limb.create());
             person.limbs[3].type = 'right leg';
 
-            person.save().then(function() {
+            person.save().then(function () {
                 validateId(person);
                 expect(person.limbs).to.have.length(4);
-                return Person.findOne({ name: 'Scott' });
-            }).then(function(p) {
+                return Person.findOne({name: 'Scott'});
+            }).then(function (p) {
                 validateId(p);
                 expect(p.name).to.be.equal('Scott');
                 expect(p.limbs).to.be.a('array');
@@ -156,7 +126,7 @@ describe('Embedded', function() {
             }).then(done, done);
         });
 
-        it('should save nested array of embeddeds', function(done) {
+        it('should save nested array of embeddeds', function (done) {
             class Point extends EmbeddedDocument {
                 constructor() {
                     super();
@@ -182,17 +152,17 @@ describe('Embedded', function() {
             let map = WorldMap.create();
             let polygon1 = Polygon.create();
             let polygon2 = Polygon.create();
-            let point1 = Point.create({ x: 123.45, y: 678.90 });
-            let point2 = Point.create({ x: 543.21, y: 987.60 });
+            let point1 = Point.create({x: 123.45, y: 678.90});
+            let point2 = Point.create({x: 543.21, y: 987.60});
 
             map.polygons.push(polygon1);
             map.polygons.push(polygon2);
             polygon2.points.push(point1);
             polygon2.points.push(point2);
 
-            map.save().then(function() {
+            map.save().then(function () {
                 return WorldMap.findOne();
-            }).then(function(m) {
+            }).then(function (m) {
                 expect(m.polygons).to.have.length(2);
                 expect(m.polygons[0]).to.be.instanceof(Polygon);
                 expect(m.polygons[1]).to.be.instanceof(Polygon);
@@ -202,7 +172,7 @@ describe('Embedded', function() {
             }).then(done, done);
         });
 
-        it('should allow nested initialization of embedded types', function(done) {
+        it('should allow nested initialization of embedded types', function (done) {
 
             class Discount extends EmbeddedDocument {
                 constructor() {
@@ -228,7 +198,7 @@ describe('Embedded', function() {
                 }
             });
 
-            product.save().then(function() {
+            product.save().then(function () {
                 validateId(product);
                 expect(product.name).to.be.equal('bike');
                 expect(product.discount).to.be.a('object');
@@ -238,7 +208,7 @@ describe('Embedded', function() {
             }).then(done, done);
         });
 
-        it('should allow initialization of array of embedded documents', function(done) {
+        it('should allow initialization of array of embedded documents', function (done) {
 
             class Discount extends EmbeddedDocument {
                 constructor() {
@@ -262,13 +232,13 @@ describe('Embedded', function() {
                     authorized: true,
                     amount: 9.99
                 },
-                {
-                    authorized: false,
-                    amount: 187.44
-                }]
+                    {
+                        authorized: false,
+                        amount: 187.44
+                    }]
             });
 
-            product.save().then(function() {
+            product.save().then(function () {
                 validateId(product);
                 expect(product.name).to.be.equal('bike');
                 expect(product.discounts).to.have.length(2);
@@ -282,13 +252,13 @@ describe('Embedded', function() {
         });
     });
 
-    describe('defaults', function() {
-        it('should assign defaults to embedded types', function(done) {
+    describe('defaults', function () {
+        it('should assign defaults to embedded types', function (done) {
 
             class EmbeddedModel extends EmbeddedDocument {
                 constructor() {
                     super();
-                    this.str = { type: String, default: 'hello' };
+                    this.str = {type: String, default: 'hello'};
                 }
             }
 
@@ -296,7 +266,7 @@ describe('Embedded', function() {
                 constructor() {
                     super();
                     this.emb = EmbeddedModel;
-                    this.num = { type: Number };
+                    this.num = {type: Number};
                 }
             }
 
@@ -304,21 +274,21 @@ describe('Embedded', function() {
             data.emb = EmbeddedModel.create();
             data.num = 1;
 
-            data.save().then(function() {
+            data.save().then(function () {
                 validateId(data);
-                return DocumentModel.findOne({ num: 1 });
-            }).then(function(d) {
+                return DocumentModel.findOne({num: 1});
+            }).then(function (d) {
                 validateId(d);
                 expect(d.emb.str).to.be.equal('hello');
             }).then(done, done);
         });
 
-        it('should assign defaults to array of embedded types', function(done) {
+        it('should assign defaults to array of embedded types', function (done) {
 
             class Money extends EmbeddedDocument {
                 constructor() {
                     super();
-                    this.value = { type: Number, default: 100 };
+                    this.value = {type: Number, default: 100};
                 }
             }
 
@@ -336,10 +306,10 @@ describe('Embedded', function() {
             wallet.contents.push(Money.create());
             wallet.contents.push(Money.create());
 
-            wallet.save().then(function() {
+            wallet.save().then(function () {
                 validateId(wallet);
-                return Wallet.findOne({ owner: 'Scott' });
-            }).then(function(w) {
+                return Wallet.findOne({owner: 'Scott'});
+            }).then(function (w) {
                 validateId(w);
                 expect(w.owner).to.be.equal('Scott');
                 expect(w.contents[0].value).to.be.equal(100);
@@ -349,14 +319,14 @@ describe('Embedded', function() {
         });
     });
 
-    describe('validate', function() {
+    describe('validate', function () {
 
-        it('should validate embedded values', function(done) {
+        it('should validate embedded values', function (done) {
 
             class EmbeddedModel extends EmbeddedDocument {
                 constructor() {
                     super();
-                    this.num = { type: Number, max: 10 };
+                    this.num = {type: Number, max: 10};
                 }
             }
 
@@ -371,20 +341,20 @@ describe('Embedded', function() {
             data.emb = EmbeddedModel.create();
             data.emb.num = 26;
 
-            data.save().then(function() {
+            data.save().then(function () {
                 expect.fail(null, Error, 'Expected error, but got none.');
-            }).catch(function(error) {
+            }).catch(function (error) {
                 expect(error).to.be.instanceof(ValidationError);
                 expect(error.message).to.contain('max');
             }).then(done, done);
         });
 
-        it('should validate array of embedded values', function(done) {
+        it('should validate array of embedded values', function (done) {
 
             class Money extends EmbeddedDocument {
                 constructor() {
                     super();
-                    this.value = { type: Number, choices: [1, 5, 10, 20, 50, 100] };
+                    this.value = {type: Number, choices: [1, 5, 10, 20, 50, 100]};
                 }
             }
 
@@ -401,9 +371,9 @@ describe('Embedded', function() {
             wallet.contents.push(Money.create());
             wallet.contents[1].value = 26;
 
-            wallet.save().then(function() {
+            wallet.save().then(function () {
                 expect.fail(null, Error, 'Expected error, but got none.');
-            }).catch(function(error) {
+            }).catch(function (error) {
                 expect(error).to.be.instanceof(ValidationError);
                 expect(error.message).to.contain('choices');
             }).then(done, done);
@@ -411,8 +381,8 @@ describe('Embedded', function() {
 
     });
 
-    describe('canonicalize', function() {
-        it('should ensure timestamp dates are converted to Date objects', function(done) {
+    describe('canonicalize', function () {
+        it('should ensure timestamp dates are converted to Date objects', function (done) {
             class Education extends EmbeddedDocument {
                 constructor() {
                     super();
@@ -449,7 +419,7 @@ describe('Embedded', function() {
                 }
             });
 
-            person.save().then(function() {
+            person.save().then(function () {
                 validateId(person);
                 expect(person.gradSchool.school).to.be.equal('CMU');
                 expect(person.gradSchool.dateGraduated.getFullYear()).to.be.equal(now.getFullYear());
@@ -461,9 +431,9 @@ describe('Embedded', function() {
         });
     });
 
-    describe('hooks', function() {
+    describe('hooks', function () {
 
-        it('should call all pre and post functions on embedded models', function(done) {
+        it('should call all pre and post functions on embedded models', function (done) {
 
             let preValidateCalled = false;
             let preSaveCalled = false;
@@ -514,7 +484,7 @@ describe('Embedded', function() {
             let cup = Cup.create();
             cup.contents = Coffee.create();
 
-            cup.save().then(function() {
+            cup.save().then(function () {
                 validateId(cup);
 
                 // Pre/post save and validate should be called
@@ -522,13 +492,13 @@ describe('Embedded', function() {
                 expect(preSaveCalled).to.be.equal(true);
                 expect(postValidateCalled).to.be.equal(true);
                 expect(postSaveCalled).to.be.equal(true);
-                
+
                 // Pre/post delete should not have been called yet
                 expect(preDeleteCalled).to.be.equal(false);
                 expect(postDeleteCalled).to.be.equal(false);
 
                 return cup.delete();
-            }).then(function(numDeleted) {
+            }).then(function (numDeleted) {
                 expect(numDeleted).to.be.equal(1);
 
                 expect(preDeleteCalled).to.be.equal(true);
@@ -536,7 +506,7 @@ describe('Embedded', function() {
             }).then(done, done);
         });
 
-        it('should call all pre and post functions on array of embedded models', function(done) {
+        it('should call all pre and post functions on array of embedded models', function (done) {
 
             let preValidateCalled = false;
             let preSaveCalled = false;
@@ -588,7 +558,7 @@ describe('Embedded', function() {
             wallet.contents.push(Money.create());
             wallet.contents.push(Money.create());
 
-            wallet.save().then(function() {
+            wallet.save().then(function () {
                 validateId(wallet);
 
                 // Pre/post save and validate should be called
@@ -596,13 +566,13 @@ describe('Embedded', function() {
                 expect(postValidateCalled).to.be.equal(true);
                 expect(preSaveCalled).to.be.equal(true);
                 expect(postSaveCalled).to.be.equal(true);
-                
+
                 // Pre/post delete should not have been called yet
                 expect(preDeleteCalled).to.be.equal(false);
                 expect(postDeleteCalled).to.be.equal(false);
 
                 return wallet.delete();
-            }).then(function(numDeleted) {
+            }).then(function (numDeleted) {
                 expect(numDeleted).to.be.equal(1);
 
                 expect(preDeleteCalled).to.be.equal(true);
@@ -611,8 +581,8 @@ describe('Embedded', function() {
         });
     });
 
-    describe('serialize', function() {
-        it('should serialize data to JSON', function(done) {
+    describe('serialize', function () {
+        it('should serialize data to JSON', function (done) {
             class Address extends EmbeddedDocument {
                 constructor() {
                     super();
@@ -650,7 +620,7 @@ describe('Embedded', function() {
                 }
             });
 
-            person.save().then(function() {
+            person.save().then(function () {
                 validateId(person);
                 expect(person.name).to.be.equal('Scott');
                 expect(person.address).to.be.an.instanceof(Address);
@@ -670,7 +640,7 @@ describe('Embedded', function() {
             }).then(done, done);
         });
 
-        it('should serialize data to JSON and ignore methods', function(done) {
+        it('should serialize data to JSON and ignore methods', function (done) {
             class Address extends EmbeddedDocument {
                 constructor() {
                     super();
@@ -701,8 +671,8 @@ describe('Embedded', function() {
 
             let person = Person.create({
                 name: 'Scott',
-                address : {
-                    street : 'Bar street'
+                address: {
+                    street: 'Bar street'
                 }
             });
 

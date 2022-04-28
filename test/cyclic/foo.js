@@ -1,9 +1,7 @@
-'use strict';
+import {Document} from '../../lib/document.js';
+import {Bar} from './bar.js';
 
-const Document = require('../../index').Document;
-const Bar = require('./bar');
-
-class Foo extends Document {
+export class Foo extends Document {
     constructor() {
         super();
 
@@ -11,5 +9,3 @@ class Foo extends Document {
         this.num = Number;
     }
 }
-
-module.exports = Foo;

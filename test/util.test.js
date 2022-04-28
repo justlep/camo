@@ -1,19 +1,18 @@
-'use strict';
+import {expect} from 'chai';
+import {deepTraverse} from '../lib/util.js';
 
-const expect = require('chai').expect;
-const deepTraverse = require('../lib/util').deepTraverse;
 
-describe('Util', function() {
+describe('Util', function () {
 
-    describe('deepTraverse()', function() {
-        it('should iterate over all keys nested in an object', function(done) {
-            let object = { 'a': [{ 'b': { 'c': 3 } }] };
+    describe('deepTraverse()', function () {
+        it('should iterate over all keys nested in an object', function (done) {
+            let object = {'a': [{'b': {'c': 3}}]};
 
             let keysSeen = [];
             let valsSeen = [];
             let parentsSeen = [];
 
-            deepTraverse(object, function(key, value, parent) {
+            deepTraverse(object, function (key, value, parent) {
                 keysSeen.push(key);
                 valsSeen.push(value);
                 parentsSeen.push(parent);

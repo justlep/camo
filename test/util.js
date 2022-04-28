@@ -1,17 +1,53 @@
-'use strict';
+import {expect} from 'chai';
+import {join, resolve} from 'path';
+import {fileURLToPath} from 'url';
+import {Document} from '../lib/document.js';
 
-const expect = require('chai').expect;
-const inherits = require('util').inherits;
-const Data = require('./data');
+const PROJECT_ROOT_PATH = resolve(fileURLToPath(import.meta.url), '../..');
 
-exports.validateId = function(obj) {
+/**
+ * @param {string} [relPath]
+ * @return {string}
+ */
+export const resolveProjectPath = (relPath) => relPath ? join(PROJECT_ROOT_PATH, relPath) : PROJECT_ROOT_PATH;
+
+export const validateId = function(obj) {
     expect(obj).to.not.be.null;
     expect(obj).to.be.a('object');
     expect(obj._id.toString()).to.be.a('string');
     expect(obj._id.toString()).to.have.length.of.at.least(1);
 };
 
-exports.data1 = function() {
+export class Data extends Document {
+    constructor() {
+        super();
+
+        this.schema({
+            number: {
+                type: Number
+            },
+            source: {
+                type: String,
+                choices: ['reddit', 'hacker-news', 'wired', 'arstechnica'],
+                default: 'reddit'
+            },
+            item: {
+                type: Number,
+                min: 0,
+                max: 100
+            },
+            values: {
+                type: [Number]
+            },
+            date: {
+                type: Date,
+                default: Date.now
+            }
+        });
+    }
+}
+
+export const getData1 = function() {
     let data = Data.create();
     data.number = 1;
     data.source = 'arstechnica';
@@ -21,7 +57,7 @@ exports.data1 = function() {
     return data;
 };
 
-exports.validateData1 = function(d) {
+export const validateData1 = function(d) {
     expect(d.number).to.be.equal(1);
     expect(d.source).to.be.equal('arstechnica');
     expect(d.item).to.be.equal(99);
@@ -29,7 +65,7 @@ exports.validateData1 = function(d) {
     expect(d.date.valueOf()).to.be.equal(1434304033241);
 };
 
-exports.data2 = function() {
+export const getData2 = function() {
     let data = Data.create();
     data.number = 2;
     data.source = 'reddit';
@@ -39,7 +75,7 @@ exports.data2 = function() {
     return data;
 };
 
-exports.validateData2 = function(d) {
+export const validateData2 = function(d) {
     expect(d.number).to.be.equal(2);
     expect(d.source).to.be.equal('reddit');
     expect(d.item).to.be.equal(26);
@@ -53,24 +89,24 @@ exports.validateData2 = function(d) {
 // a false positive.
 //
 // This is my dumb way of getting around that.
-const FailError = function(expected, actual, message) {
-  Error.call(this);
-  Error.captureStackTrace(this, FailError);
-  this.name = 'FailError';
-  this.expected = expected;
-  this.actual = actual;
-  this.message = message;
-};
-inherits(FailError, Error);
+class  FailError extends Error {
+    constructor(expected, actual, message) {
+        super(message);
+        this.name = 'FailError';
+        this.expected = expected;
+        this.actual = actual;
+        Error.captureStackTrace(this, FailError);
+    }
+}
 
-exports.fail = function(expected, actual, message) {
+export const fail = function(expected, actual, message) {
     throw new FailError(expected, actual, message);
 };
 
-exports.expectError = function(error) {
+export const expectError = function(error) {
     if (error instanceof FailError) {
         expect.fail(error.expected, error.actual, error.message);
         return;
     }
-    expect(error instanceof Error).to.be.true;
+    expect(error).to.be.instanceof(Error);
 };

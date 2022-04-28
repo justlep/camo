@@ -1,45 +1,18 @@
-'use strict';
+import {expect} from 'chai';
+import {Document} from '../lib/document.js';
+import {fail, validateId, expectError, Data} from './util.js';
+import {isDocument} from '../lib/validate.js';
+import {ValidationError} from '../lib/errors.js';
+import {initMochaHooksForNedb} from './database.js';
 
-const expect = require('chai').expect;
-const connect = require('../index').connect;
-const Document = require('../index').Document;
-const isDocument = require('../lib/validate').isDocument;
-const ValidationError = require('../lib/errors').ValidationError;
-const Data = require('./data');
-const validateId = require('./util').validateId;
-const fail = require('./util').fail;
-const expectError = require('./util').expectError;
 
-describe('Document', function() {
+describe('Document', function () {
 
-    // TODO: Should probably use mock database client...
-    const url = 'nedb://memory';
-    //const url = 'mongodb://localhost/camo_test';
-    let database = null;
+    initMochaHooksForNedb();
 
-    before(function(done) {
-        connect(url).then(function(db) {
-            database = db;
-            return database.dropDatabase();
-        }).then(function() {
-            return done();
-        });
-    });
 
-    beforeEach(function(done) {
-        done();
-    });
-
-    afterEach(function(done) {
-        database.dropDatabase().then(function() {}).then(done, done);
-    });
-
-    after(function(done) {
-        database.dropDatabase().then(function() {}).then(done, done);
-    });
-
-    describe('instantiation', function() {
-        it('should allow creation of instance', function(done) {
+    describe('instantiation', function () {
+        it('should allow creation of instance', function (done) {
 
             class User extends Document {
                 constructor() {
@@ -53,12 +26,12 @@ describe('Document', function() {
             user.firstName = 'Billy';
             user.lastName = 'Bob';
 
-            user.save().then(function() {
+            user.save().then(function () {
                 validateId(user);
             }).then(done, done);
         });
 
-        it('should allow schema declaration via method', function(done) {
+        it('should allow schema declaration via method', function (done) {
 
             class User extends Document {
                 constructor() {
@@ -75,12 +48,12 @@ describe('Document', function() {
             user.firstName = 'Billy';
             user.lastName = 'Bob';
 
-            user.save().then(function() {
+            user.save().then(function () {
                 validateId(user);
             }).then(done, done);
         });
 
-        it('should allow creation of instance with data', function(done) {
+        it('should allow creation of instance with data', function (done) {
 
             class User extends Document {
                 constructor() {
@@ -103,11 +76,11 @@ describe('Document', function() {
             expect(user.nicknames).to.include('Bill');
             expect(user.nicknames).to.include('William');
             expect(user.nicknames).to.include('Will');
-            
+
             done();
         });
 
-        it('should allow creation of instance with references', function(done) {
+        it('should allow creation of instance with references', function (done) {
 
             class Coffee extends Document {
                 constructor() {
@@ -126,15 +99,15 @@ describe('Document', function() {
             let coffee = Coffee.create();
             coffee.temp = 105;
 
-            coffee.save().then(function() {
-                let user = User.create({ drinks: [coffee] });
+            coffee.save().then(function () {
+                let user = User.create({drinks: [coffee]});
                 expect(user.drinks).to.have.length(1);
             }).then(done, done);
         });
     });
 
-    describe('class', function() {
-        it('should allow use of member variables in getters', function(done) {
+    describe('class', function () {
+        it('should allow use of member variables in getters', function (done) {
 
             class User extends Document {
                 constructor() {
@@ -152,13 +125,13 @@ describe('Document', function() {
             user.firstName = 'Billy';
             user.lastName = 'Bob';
 
-            user.save().then(function() {
+            user.save().then(function () {
                 validateId(user);
                 expect(user.fullName).to.be.equal('Billy Bob');
             }).then(done, done);
         });
 
-        it('should allow use of member variables in setters', function(done) {
+        it('should allow use of member variables in setters', function (done) {
 
             class User extends Document {
                 constructor() {
@@ -181,14 +154,14 @@ describe('Document', function() {
             let user = User.create();
             user.fullName = 'Billy Bob';
 
-            user.save().then(function() {
+            user.save().then(function () {
                 validateId(user);
                 expect(user.firstName).to.be.equal('Billy');
                 expect(user.lastName).to.be.equal('Bob');
             }).then(done, done);
         });
 
-        it('should allow use of member variables in methods', function(done) {
+        it('should allow use of member variables in methods', function (done) {
 
             class User extends Document {
                 constructor() {
@@ -206,13 +179,13 @@ describe('Document', function() {
             user.firstName = 'Billy';
             user.lastName = 'Bob';
 
-            user.save().then(function() {
+            user.save().then(function () {
                 validateId(user);
                 expect(user.fullName()).to.be.equal('Billy Bob');
             }).then(done, done);
         });
 
-        it('should allow schemas to be extended', function(done) {
+        it('should allow schemas to be extended', function (done) {
 
             class User extends Document {
                 constructor(collection) {
@@ -234,7 +207,7 @@ describe('Document', function() {
             user.lastName = 'Bob';
             user.paymentMethod = 'cash';
 
-            user.save().then(function() {
+            user.save().then(function () {
                 validateId(user);
                 expect(user.firstName).to.be.equal('Billy');
                 expect(user.lastName).to.be.equal('Bob');
@@ -242,7 +215,7 @@ describe('Document', function() {
             }).then(done, done);
         });
 
-        it('should allow schemas to be overridden', function(done) {
+        it('should allow schemas to be overridden', function (done) {
 
             class Vehicle extends Document {
                 constructor(collection) {
@@ -266,13 +239,13 @@ describe('Document', function() {
 
             let bike = Motorcycle.create();
 
-            bike.save().then(function() {
+            bike.save().then(function () {
                 validateId(bike);
                 expect(bike.numWheels).to.be.equal(2);
             }).then(done, done);
         });
 
-        it('should provide default collection name based on class name', function(done) {
+        it('should provide default collection name based on class name', function (done) {
 
             class User extends Document {
                 constructor() {
@@ -288,7 +261,7 @@ describe('Document', function() {
             done();
         });
 
-        it('should provide default collection name based on subclass name', function(done) {
+        it('should provide default collection name based on subclass name', function (done) {
 
             class User extends Document {
                 constructor() {
@@ -310,7 +283,7 @@ describe('Document', function() {
             done();
         });
 
-        it('should allow custom collection name', function(done) {
+        it('should allow custom collection name', function (done) {
 
             class User extends Document {
                 constructor() {
@@ -331,8 +304,8 @@ describe('Document', function() {
         });
     });
 
-    describe('types', function() {
-        it('should allow reference types', function(done) {
+    describe('types', function () {
+        it('should allow reference types', function (done) {
 
             class ReferenceeModel extends Document {
                 constructor() {
@@ -349,7 +322,7 @@ describe('Document', function() {
                 constructor() {
                     super();
                     this.ref = ReferenceeModel;
-                    this.num = { type: Number };
+                    this.num = {type: Number};
                 }
 
                 static collectionName() {
@@ -362,13 +335,13 @@ describe('Document', function() {
             data.ref.str = 'some data';
             data.num = 1;
 
-            data.ref.save().then(function() {
+            data.ref.save().then(function () {
                 validateId(data.ref);
                 return data.save();
-            }).then(function() {
+            }).then(function () {
                 validateId(data);
-                return ReferencerModel.findOne({ num: 1 });
-            }).then(function(d) {
+                return ReferencerModel.findOne({num: 1});
+            }).then(function (d) {
                 validateId(d);
                 validateId(d.ref);
                 expect(d.ref).to.be.an.instanceof(ReferenceeModel);
@@ -376,12 +349,12 @@ describe('Document', function() {
             }).then(done, done);
         });
 
-        it('should allow array of references', function(done) {
+        it('should allow array of references', function (done) {
 
             class ReferenceeModel extends Document {
                 constructor() {
                     super();
-                    this.schema({ str: { type: String } });
+                    this.schema({str: {type: String}});
                 }
 
                 static collectionName() {
@@ -408,16 +381,16 @@ describe('Document', function() {
             data.refs[1].str = 'string2';
             data.num = 1;
 
-            data.refs[0].save().then(function() {
+            data.refs[0].save().then(function () {
                 validateId(data.refs[0]);
                 return data.refs[1].save();
-            }).then(function() {
+            }).then(function () {
                 validateId(data.refs[1]);
                 return data.save();
-            }).then(function() {
+            }).then(function () {
                 validateId(data);
-                return ReferencerModel.findOne({ num: 1 });
-            }).then(function(d) {
+                return ReferencerModel.findOne({num: 1});
+            }).then(function (d) {
                 validateId(d);
                 validateId(d.refs[0]);
                 validateId(d.refs[1]);
@@ -428,7 +401,7 @@ describe('Document', function() {
             }).then(done, done);
         });
 
-        it('should allow references to be saved using the object or its id', function(done) {
+        it('should allow references to be saved using the object or its id', function (done) {
             class ReferenceeModel extends Document {
                 constructor() {
                     super();
@@ -445,7 +418,7 @@ describe('Document', function() {
                     super();
                     this.ref1 = ReferenceeModel;
                     this.ref2 = ReferenceeModel;
-                    this.num = { type: Number };
+                    this.num = {type: Number};
                 }
 
                 static collectionName() {
@@ -460,19 +433,19 @@ describe('Document', function() {
             ref2.str = 'string2';
             data.num = 1;
 
-            data.ref1.save().then(function() {
+            data.ref1.save().then(function () {
                 validateId(data.ref1);
                 return data.save();
-            }).then(function() {
+            }).then(function () {
                 validateId(data);
                 return ref2.save();
-            }).then(function() {
+            }).then(function () {
                 validateId(ref2);
                 data.ref2 = ref2._id;
                 return data.save();
-            }).then(function() {
+            }).then(function () {
                 return ReferencerModel.findOne({num: 1});
-            }).then(function(d) {
+            }).then(function (d) {
                 validateId(d.ref1);
                 validateId(d.ref2);
                 expect(d.ref1.str).to.be.equal('string1');
@@ -480,11 +453,11 @@ describe('Document', function() {
             }).then(done, done);
         });
 
-        it('should allow array of references to be saved using the object or its id', function(done) {
+        it('should allow array of references to be saved using the object or its id', function (done) {
             class ReferenceeModel extends Document {
                 constructor() {
                     super();
-                    this.schema({ str: { type: String } });
+                    this.schema({str: {type: String}});
                 }
 
                 static collectionName() {
@@ -511,26 +484,26 @@ describe('Document', function() {
             ref2.str = 'string2';
             data.num = 1;
 
-            data.refs[0].save().then(function() {
+            data.refs[0].save().then(function () {
                 validateId(data.refs[0]);
                 return data.save();
-            }).then(function() {
+            }).then(function () {
                 validateId(data);
                 return ref2.save();
-            }).then(function() {
+            }).then(function () {
                 validateId(ref2);
                 data.refs.push(ref2._id);
                 return data.save();
-            }).then(function() {
+            }).then(function () {
                 return ReferencerModel.findOne({num: 1});
-            }).then(function(d) {
+            }).then(function (d) {
                 validateId(d.refs[0]);
                 validateId(d.refs[1]);
                 expect(d.refs[1].str).to.be.equal('string2');
             }).then(done, done);
         });
 
-        it('should allow circular references', function(done) {
+        it('should allow circular references', function (done) {
 
             class Employee extends Document {
                 constructor() {
@@ -560,24 +533,24 @@ describe('Document', function() {
 
             employee.boss = boss;
 
-            boss.save().then(function() {
+            boss.save().then(function () {
                 validateId(boss);
 
                 return employee.save();
-            }).then(function() {
+            }).then(function () {
                 validateId(employee);
                 validateId(employee.boss);
 
                 boss.employees.push(employee);
 
                 return boss.save();
-            }).then(function() {
+            }).then(function () {
                 validateId(boss);
                 validateId(boss.employees[0]);
                 validateId(boss.employees[0].boss);
 
-                return Boss.findOne({ salary: 10000000 });
-            }).then(function(b) {
+                return Boss.findOne({salary: 10000000});
+            }).then(function (b) {
                 // If we had an issue with an infinite loop
                 // of loading circular dependencies then the
                 // test probably would have crashed by now,
@@ -596,30 +569,30 @@ describe('Document', function() {
             }).then(done, done);
         });
 
-        it('should allow string types', function(done) {
+        it('should allow string types', function (done) {
 
             class StringModel extends Document {
                 constructor() {
                     super();
-                    this.schema({ str: { type: String } });
+                    this.schema({str: {type: String}});
                 }
             }
 
             let data = StringModel.create();
             data.str = 'hello';
 
-            data.save().then(function() {
+            data.save().then(function () {
                 validateId(data);
                 expect(data.str).to.be.equal('hello');
             }).then(done, done);
         });
 
-        it('should allow number types', function(done) {
+        it('should allow number types', function (done) {
 
             class NumberModel extends Document {
                 constructor() {
                     super();
-                    this.schema({ num: { type: Number } });
+                    this.schema({num: {type: Number}});
                 }
 
                 static collectionName() {
@@ -630,36 +603,36 @@ describe('Document', function() {
             let data = NumberModel.create();
             data.num = 26;
 
-            data.save().then(function() {
+            data.save().then(function () {
                 validateId(data);
                 expect(data.num).to.be.equal(26);
             }).then(done, done);
         });
 
-        it('should allow boolean types', function(done) {
+        it('should allow boolean types', function (done) {
 
             class BooleanModel extends Document {
                 constructor() {
                     super();
-                    this.schema({ bool: { type: Boolean } });
+                    this.schema({bool: {type: Boolean}});
                 }
             }
 
             let data = BooleanModel.create();
             data.bool = true;
 
-            data.save().then(function() {
+            data.save().then(function () {
                 validateId(data);
                 expect(data.bool).to.be.equal(true);
             }).then(done, done);
         });
 
-        it('should allow date types', function(done) {
+        it('should allow date types', function (done) {
 
             class DateModel extends Document {
                 constructor() {
                     super();
-                    this.schema({ date: { type: Date } });
+                    this.schema({date: {type: Date}});
                 }
             }
 
@@ -667,62 +640,62 @@ describe('Document', function() {
             let date = new Date();
             data.date = date;
 
-            data.save().then(function() {
+            data.save().then(function () {
                 validateId(data);
                 expect(data.date.valueOf()).to.be.equal(date.valueOf());
             }).then(done, done);
         });
 
-        it('should allow object types', function(done) {
+        it('should allow object types', function (done) {
 
             class ObjectModel extends Document {
                 constructor() {
                     super();
-                    this.schema({ obj: { type: Object } });
+                    this.schema({obj: {type: Object}});
                 }
             }
 
             let data = ObjectModel.create();
-            data.obj = { hi: 'bye'};
+            data.obj = {hi: 'bye'};
 
-            data.save().then(function() {
+            data.save().then(function () {
                 validateId(data);
                 expect(data.obj.hi).to.not.be.null;
                 expect(data.obj.hi).to.be.equal('bye');
             }).then(done, done);
         });
 
-        it('should allow buffer types', function(done) {
+        it('should allow buffer types', function (done) {
 
             class BufferModel extends Document {
                 constructor() {
                     super();
-                    this.schema({ buf: { type: Buffer } });
+                    this.schema({buf: {type: Buffer}});
                 }
             }
 
             let data = BufferModel.create();
             data.buf = new Buffer('hello');
 
-            data.save().then(function() {
+            data.save().then(function () {
                 validateId(data);
                 expect(data.buf.toString('ascii')).to.be.equal('hello');
             }).then(done, done);
         });
 
-        it('should allow array types', function(done) {
+        it('should allow array types', function (done) {
 
             class ArrayModel extends Document {
                 constructor() {
                     super();
-                    this.schema({ arr: { type: Array } });
+                    this.schema({arr: {type: Array}});
                 }
             }
 
             let data = ArrayModel.create();
             data.arr = [1, 'number', true];
 
-            data.save().then(function() {
+            data.save().then(function () {
                 validateId(data);
                 expect(data.arr).to.have.length(3);
                 expect(data.arr).to.include(1);
@@ -731,19 +704,19 @@ describe('Document', function() {
             }).then(done, done);
         });
 
-        it('should allow typed-array types', function(done) {
+        it('should allow typed-array types', function (done) {
 
             class ArrayModel extends Document {
                 constructor() {
                     super();
-                    this.schema({ arr: { type: [String] } });
+                    this.schema({arr: {type: [String]}});
                 }
             }
 
             let data = ArrayModel.create();
             data.arr = ['1', '2', '3'];
 
-            data.save().then(function() {
+            data.save().then(function () {
                 validateId(data);
                 expect(data.arr).to.have.length(3);
                 expect(data.arr).to.include('1');
@@ -752,12 +725,12 @@ describe('Document', function() {
             }).then(done, done);
         });
 
-        it('should reject objects containing values with different types', function(done) {
+        it('should reject objects containing values with different types', function (done) {
 
             class NumberModel extends Document {
                 constructor() {
                     super();
-                    this.schema({ num: { type: Number } });
+                    this.schema({num: {type: Number}});
                 }
 
                 static collectionName() {
@@ -768,55 +741,55 @@ describe('Document', function() {
             let data = NumberModel.create();
             data.num = '1';
 
-            data.save().then(function() {
+            data.save().then(function () {
                 expect.fail(null, Error, 'Expected error, but got none.');
-            }).catch(function(error) {
+            }).catch(function (error) {
                 expect(error).to.be.instanceof(ValidationError);
             }).then(done, done);
         });
 
-        it('should reject typed-arrays containing different types', function(done) {
+        it('should reject typed-arrays containing different types', function (done) {
 
             class ArrayModel extends Document {
                 constructor() {
                     super();
-                    this.schema({ arr: { type: [String] } });
+                    this.schema({arr: {type: [String]}});
                 }
             }
 
             let data = ArrayModel.create();
             data.arr = [1, 2, 3];
 
-            data.save().then(function() {
+            data.save().then(function () {
                 expect.fail(null, Error, 'Expected error, but got none.');
-            }).catch(function(error) {
+            }).catch(function (error) {
                 expect(error).to.be.instanceof(ValidationError);
             }).then(done, done);
         });
     });
 
-    describe('defaults', function() {
-        it('should assign default value if unassigned', function(done) {
+    describe('defaults', function () {
+        it('should assign default value if unassigned', function (done) {
 
             let data = Data.create();
 
-            data.save().then(function() {
+            data.save().then(function () {
                 validateId(data);
                 expect(data.source).to.be.equal('reddit');
             }).then(done, done);
         });
 
-        it('should assign default value via function if unassigned', function(done) {
+        it('should assign default value via function if unassigned', function (done) {
 
             let data = Data.create();
 
-            data.save().then(() => new Promise(resolve => setTimeout(resolve, 1))).then(function() {
+            data.save().then(() => new Promise(resolve => setTimeout(resolve, 1))).then(function () {
                 validateId(data);
                 expect(data.date).to.be.lessThan(new Date());
             }).then(done, done);
         });
 
-        it('should be undefined if unassigned and no default is given', function(done) {
+        it('should be undefined if unassigned and no default is given', function (done) {
 
             class Person extends Document {
                 constructor() {
@@ -834,10 +807,10 @@ describe('Document', function() {
                 name: 'Scott'
             });
 
-            person.save().then(function() {
+            person.save().then(function () {
                 validateId(person);
                 return Person.findOne({name: 'Scott'});
-            }).then(function(p) {
+            }).then(function (p) {
                 validateId(p);
                 expect(p.name).to.be.equal('Scott');
                 expect(p.age).to.be.undefined;
@@ -845,105 +818,105 @@ describe('Document', function() {
         });
     });
 
-    describe('choices', function() {
-        it('should accept value specified in choices', function(done) {
+    describe('choices', function () {
+        it('should accept value specified in choices', function (done) {
 
             let data = Data.create();
             data.source = 'wired';
 
-            data.save().then(function() {
+            data.save().then(function () {
                 validateId(data);
                 expect(data.source).to.be.equal('wired');
             }).then(done, done);
         });
 
-        it('should reject values not specified in choices', function(done) {
+        it('should reject values not specified in choices', function (done) {
 
             let data = Data.create();
             data.source = 'google';
 
-            data.save().then(function() {
+            data.save().then(function () {
                 expect.fail(null, Error, 'Expected error, but got none.');
-            }).catch(function(error) {
+            }).catch(function (error) {
                 expect(error).to.be.instanceof(ValidationError);
             }).then(done, done);
         });
     });
 
-    describe('min', function() {
-        it('should accept value > min', function(done) {
+    describe('min', function () {
+        it('should accept value > min', function (done) {
 
             let data = Data.create();
             data.item = 1;
 
-            data.save().then(function() {
+            data.save().then(function () {
                 validateId(data);
                 expect(data.item).to.be.equal(1);
             }).then(done, done);
         });
 
-        it('should accept value == min', function(done) {
+        it('should accept value == min', function (done) {
 
             let data = Data.create();
             data.item = 0;
 
-            data.save().then(function() {
+            data.save().then(function () {
                 validateId(data);
                 expect(data.item).to.be.equal(0);
             }).then(done, done);
         });
 
-        it('should reject value < min', function(done) {
+        it('should reject value < min', function (done) {
 
             let data = Data.create();
             data.item = -1;
 
-            data.save().then(function() {
+            data.save().then(function () {
                 expect.fail(null, Error, 'Expected error, but got none.');
-            }).catch(function(error) {
+            }).catch(function (error) {
                 expect(error).to.be.instanceof(ValidationError);
             }).then(done, done);
         });
     });
 
-    describe('max', function() {
-        it('should accept value < max', function(done) {
+    describe('max', function () {
+        it('should accept value < max', function (done) {
 
             let data = Data.create();
             data.item = 99;
 
-            data.save().then(function() {
+            data.save().then(function () {
                 validateId(data);
                 expect(data.item).to.be.equal(99);
             }).then(done, done);
         });
 
-        it('should accept value == max', function(done) {
+        it('should accept value == max', function (done) {
 
             let data = Data.create();
             data.item = 100;
 
-            data.save().then(function() {
+            data.save().then(function () {
                 validateId(data);
                 expect(data.item).to.be.equal(100);
             }).then(done, done);
         });
 
-        it('should reject value > max', function(done) {
+        it('should reject value > max', function (done) {
 
             let data = Data.create();
             data.item = 101;
 
-            data.save().then(function() {
+            data.save().then(function () {
                 expect.fail(null, Error, 'Expected error, but got none.');
-            }).catch(function(error) {
+            }).catch(function (error) {
                 expect(error).to.be.instanceof(ValidationError);
             }).then(done, done);
         });
     });
 
-    describe('match', function() {
-        it('should accept value matching regex', function(done) {
+    describe('match', function () {
+        it('should accept value matching regex', function (done) {
 
             class Product extends Document {
                 constructor() {
@@ -960,14 +933,14 @@ describe('Document', function() {
             product.name = 'Dark Roast Coffee';
             product.cost = '$1.39';
 
-            product.save().then(function() {
+            product.save().then(function () {
                 validateId(product);
                 expect(product.name).to.be.equal('Dark Roast Coffee');
                 expect(product.cost).to.be.equal('$1.39');
             }).then(done, done);
         });
 
-        it('should reject value not matching regex', function(done) {
+        it('should reject value not matching regex', function (done) {
 
             class Product extends Document {
                 constructor() {
@@ -984,16 +957,16 @@ describe('Document', function() {
             product.name = 'Light Roast Coffee';
             product.cost = '$1..39';
 
-            product.save().then(function() {
+            product.save().then(function () {
                 fail(null, Error, 'Expected error, but got none.');
-            }).catch(function(error) {
+            }).catch(function (error) {
                 expectError(error);
             }).then(done, done);
         });
     });
 
-    describe('validate', function() {
-        it('should accept value that passes custom validator', function(done) {
+    describe('validate', function () {
+        it('should accept value that passes custom validator', function (done) {
 
             class Person extends Document {
                 constructor() {
@@ -1001,7 +974,7 @@ describe('Document', function() {
 
                     this.name = {
                         type: String,
-                        validate: function(value) {
+                        validate: function (value) {
                             return value.length > 4;
                         }
                     };
@@ -1016,13 +989,13 @@ describe('Document', function() {
                 name: 'Scott'
             });
 
-            person.save().then(function() {
+            person.save().then(function () {
                 validateId(person);
                 expect(person.name).to.be.equal('Scott');
             }).then(done, done);
         });
 
-        it('should reject value that fails custom validator', function(done) {
+        it('should reject value that fails custom validator', function (done) {
 
             class Person extends Document {
                 constructor() {
@@ -1030,7 +1003,7 @@ describe('Document', function() {
 
                     this.name = {
                         type: String,
-                        validate: function(value) {
+                        validate: function (value) {
                             return value.length > 4;
                         }
                     };
@@ -1045,16 +1018,16 @@ describe('Document', function() {
                 name: 'Matt'
             });
 
-            person.save().then(function() {
+            person.save().then(function () {
                 fail(null, Error, 'Expected error, but got none.');
-            }).catch(function(error) {
+            }).catch(function (error) {
                 expectError(error);
             }).then(done, done);
         });
     });
 
-    describe('canonicalize', function() {
-        it('should ensure timestamp dates are converted to Date objects', function(done) {
+    describe('canonicalize', function () {
+        it('should ensure timestamp dates are converted to Date objects', function (done) {
 
             class Person extends Document {
                 constructor() {
@@ -1074,13 +1047,13 @@ describe('Document', function() {
                 birthday: now
             });
 
-            person.save().then(function() {
+            person.save().then(function () {
                 validateId(person);
                 expect(person.birthday.valueOf()).to.be.equal(now.valueOf());
             }).then(done, done);
         });
 
-        it('should ensure date strings are converted to Date objects', function(done) {
+        it('should ensure date strings are converted to Date objects', function (done) {
 
             class Person extends Document {
                 constructor() {
@@ -1105,7 +1078,7 @@ describe('Document', function() {
                 weddingDate: '2016/02/17'
             });
 
-            person.save().then(function() {
+            person.save().then(function () {
                 validateId(person);
                 expect(person.birthday.valueOf()).to.be.equal(birthday.valueOf());
                 expect(person.graduationDate.valueOf()).to.be.equal(graduationDate.valueOf());
@@ -1114,8 +1087,8 @@ describe('Document', function() {
         });
     });
 
-    describe('required', function() {
-        it('should accept empty value that is not reqired', function(done) {
+    describe('required', function () {
+        it('should accept empty value that is not reqired', function (done) {
 
             class Person extends Document {
                 constructor() {
@@ -1136,13 +1109,13 @@ describe('Document', function() {
                 name: ''
             });
 
-            person.save().then(function() {
+            person.save().then(function () {
                 validateId(person);
                 expect(person.name).to.be.equal('');
             }).then(done, done);
         });
 
-        it('should accept value that is not undefined', function(done) {
+        it('should accept value that is not undefined', function (done) {
 
             class Person extends Document {
                 constructor() {
@@ -1163,13 +1136,13 @@ describe('Document', function() {
                 name: 'Scott'
             });
 
-            person.save().then(function() {
+            person.save().then(function () {
                 validateId(person);
                 expect(person.name).to.be.equal('Scott');
             }).then(done, done);
         });
 
-        it('should accept an empty value if default is specified', function(done) {
+        it('should accept an empty value if default is specified', function (done) {
 
             class Person extends Document {
                 constructor() {
@@ -1189,13 +1162,13 @@ describe('Document', function() {
 
             let person = Person.create();
 
-            person.save().then(function() {
+            person.save().then(function () {
                 validateId(person);
                 expect(person.name).to.be.equal('Scott');
             }).then(done, done);
         });
 
-        it('should accept boolean value', function(done) {
+        it('should accept boolean value', function (done) {
 
             class Person extends Document {
                 constructor() {
@@ -1221,14 +1194,14 @@ describe('Document', function() {
                 isSingle: false
             });
 
-            person.save().then(function() {
+            person.save().then(function () {
                 validateId(person);
                 expect(person.isMerried).to.be.true;
                 expect(person.isSingle).to.be.false;
             }).then(done, done);
         });
 
-        it('should accept date value', function(done) {
+        it('should accept date value', function (done) {
 
             class Person extends Document {
                 constructor() {
@@ -1251,13 +1224,13 @@ describe('Document', function() {
                 birthDate: myBirthDate
             });
 
-            person.save().then(function(savedPerson) {
+            person.save().then(function (savedPerson) {
                 validateId(person);
                 expect(savedPerson.birthDate.valueOf()).to.equal(myBirthDate.valueOf());
             }).then(done, done);
         });
 
-        it('should accept any number value', function(done) {
+        it('should accept any number value', function (done) {
 
             class Person extends Document {
                 constructor() {
@@ -1283,14 +1256,14 @@ describe('Document', function() {
                 level: 0
             });
 
-            person.save().then(function(savedPerson) {
+            person.save().then(function (savedPerson) {
                 validateId(person);
                 expect(savedPerson.age).to.equal(21);
                 expect(savedPerson.level).to.equal(0);
             }).then(done, done);
         });
 
-        it('should reject value that is undefined', function(done) {
+        it('should reject value that is undefined', function (done) {
 
             class Person extends Document {
                 constructor() {
@@ -1309,14 +1282,14 @@ describe('Document', function() {
 
             let person = Person.create();
 
-            person.save().then(function() {
+            person.save().then(function () {
                 fail(null, Error, 'Expected error, but got none.');
-            }).catch(function(error) {
+            }).catch(function (error) {
                 expectError(error);
             }).then(done, done);
         });
 
-        it('should reject value if specified default empty value', function(done) {
+        it('should reject value if specified default empty value', function (done) {
 
             class Person extends Document {
                 constructor() {
@@ -1336,14 +1309,14 @@ describe('Document', function() {
 
             let person = Person.create();
 
-            person.save().then(function() {
+            person.save().then(function () {
                 fail(null, Error, 'Expected error, but got none.');
-            }).catch(function(error) {
+            }).catch(function (error) {
                 expectError(error);
             }).then(done, done);
         });
 
-        it('should reject value that is null', function(done) {
+        it('should reject value that is null', function (done) {
 
             class Person extends Document {
                 constructor() {
@@ -1364,14 +1337,14 @@ describe('Document', function() {
                 name: null
             });
 
-            person.save().then(function() {
+            person.save().then(function () {
                 fail(null, Error, 'Expected error, but got none.');
-            }).catch(function(error) {
+            }).catch(function (error) {
                 expectError(error);
             }).then(done, done);
         });
 
-        it('should reject value that is an empty array', function(done) {
+        it('should reject value that is an empty array', function (done) {
 
             class Person extends Document {
                 constructor() {
@@ -1392,14 +1365,14 @@ describe('Document', function() {
                 names: []
             });
 
-            person.save().then(function() {
+            person.save().then(function () {
                 fail(null, Error, 'Expected error, but got none.');
-            }).catch(function(error) {
+            }).catch(function (error) {
                 expectError(error);
             }).then(done, done);
         });
 
-        it('should reject value that is an empty string', function(done) {
+        it('should reject value that is an empty string', function (done) {
 
             class Person extends Document {
                 constructor() {
@@ -1420,14 +1393,14 @@ describe('Document', function() {
                 name: ''
             });
 
-            person.save().then(function() {
+            person.save().then(function () {
                 fail(null, Error, 'Expected error, but got none.');
-            }).catch(function(error) {
+            }).catch(function (error) {
                 expectError(error);
             }).then(done, done);
         });
 
-        it('should reject value that is an empty object', function(done) {
+        it('should reject value that is an empty object', function (done) {
 
             class Person extends Document {
                 constructor() {
@@ -1448,16 +1421,16 @@ describe('Document', function() {
                 names: {}
             });
 
-            person.save().then(function() {
+            person.save().then(function () {
                 fail(null, Error, 'Expected error, but got none.');
-            }).catch(function(error) {
+            }).catch(function (error) {
                 expectError(error);
             }).then(done, done);
         });
     });
 
-    describe('hooks', function() {
-        it('should call all pre and post functions', function(done) {
+    describe('hooks', function () {
+        it('should call all pre and post functions', function (done) {
 
             let preValidateCalled = false;
             let preSaveCalled = false;
@@ -1503,7 +1476,7 @@ describe('Document', function() {
 
             let person = Person.create();
 
-            person.save().then(function() {
+            person.save().then(function () {
                 validateId(person);
 
                 // Pre/post save and validate should be called
@@ -1511,13 +1484,13 @@ describe('Document', function() {
                 expect(preSaveCalled).to.be.equal(true);
                 expect(postValidateCalled).to.be.equal(true);
                 expect(postSaveCalled).to.be.equal(true);
-                
+
                 // Pre/post delete should not have been called yet
                 expect(preDeleteCalled).to.be.equal(false);
                 expect(postDeleteCalled).to.be.equal(false);
 
                 return person.delete();
-            }).then(function(numDeleted) {
+            }).then(function (numDeleted) {
                 expect(numDeleted).to.be.equal(1);
 
                 expect(preDeleteCalled).to.be.equal(true);
@@ -1526,8 +1499,8 @@ describe('Document', function() {
         });
     });
 
-    describe('serialize', function() {
-        it('should serialize data to JSON', function(done) {
+    describe('serialize', function () {
+        it('should serialize data to JSON', function (done) {
             class Person extends Document {
                 constructor() {
                     super();
@@ -1555,7 +1528,7 @@ describe('Document', function() {
                 spouse: null
             });
 
-            person.save().then(function() {
+            person.save().then(function () {
                 validateId(person);
                 expect(person.name).to.be.equal('Scott');
                 expect(person.age).to.be.equal(28);
@@ -1574,7 +1547,7 @@ describe('Document', function() {
             }).then(done, done);
         });
 
-        it('should serialize data to JSON', function(done) {
+        it('should serialize data to JSON', function (done) {
             class Person extends Document {
                 constructor() {
                     super();
@@ -1608,17 +1581,17 @@ describe('Document', function() {
                 name: 'Timmy'
             });
 
-            spouse.save().then(function() {
+            spouse.save().then(function () {
                 return kid1.save();
-            }).then(function() {
+            }).then(function () {
                 return kid2.save();
-            }).then(function() {
+            }).then(function () {
                 person.spouse = spouse;
                 person.children.push(kid1);
                 person.children.push(kid2);
 
                 return person.save();
-            }).then(function() {
+            }).then(function () {
                 validateId(person);
                 validateId(spouse);
                 validateId(kid1);
@@ -1646,7 +1619,7 @@ describe('Document', function() {
             }).then(done, done);
         });
 
-        it('should serialize data to JSON and ignore methods', function(done) {
+        it('should serialize data to JSON and ignore methods', function (done) {
             class Person extends Document {
                 constructor() {
                     super();

@@ -1,50 +1,19 @@
-'use strict';
+import {expect} from 'chai';
+import {Document} from '../lib/document.js';
+import {getData1, getData2, validateId, validateData1, Data} from './util.js';
+import {isNativeId} from '../lib/validate.js';
+import {initMochaHooksForNedb} from './database.js';
 
-const _ = require('lodash');
-const expect = require('chai').expect;
-const connect = require('../index').connect;
-const Document = require('../index').Document;
-const Data = require('./data');
-const getData1 = require('./util').data1;
-const getData2 = require('./util').data2;
-const validateData1 = require('./util').validateData1;
-const validateData2 = require('./util').validateData2;
-const validateId = require('./util').validateId;
-const isNativeId = require('../lib/validate').isNativeId;
+describe('Client', function () {
 
-describe('Client', function() {
-
-    const url = 'nedb://memory';
-    //const url = 'mongodb://localhost/camo_test';
-    let database = null;
-
-    before(function(done) {
-        connect(url).then(function(db) {
-            database = db;
-            return database.dropDatabase();
-        }).then(function() {
-            return done();
-        });
-    });
-
-    beforeEach(function(done) {
-        done();
-    });
-
-    afterEach(function(done) {
-        database.dropDatabase().then(function() {}).then(done, done);
-    });
-
-    after(function(done) {
-        database.dropDatabase().then(function() {}).then(done, done);
-    }); 
-
-    describe('#save()', function() {
-        it('should persist the object and its members to the database', function(done) {
+    initMochaHooksForNedb();
+    
+    describe('#save()', function () {
+        it('should persist the object and its members to the database', function (done) {
 
             let data = getData1();
 
-            data.save().then(function() {
+            data.save().then(function () {
                 validateId(data);
                 validateData1(data);
             }).then(done, done);
@@ -71,7 +40,7 @@ describe('Client', function() {
 
             this.schema({
                 type: String,
-                name: String,
+                name: String
             });
         }
     }
@@ -89,21 +58,21 @@ describe('Client', function() {
         }
     }
 
-    describe('#findOne()', function() {
-        it('should load a single object from the collection', function(done) {
+    describe('#findOne()', function () {
+        it('should load a single object from the collection', function (done) {
 
             let data = getData1();
 
-            data.save().then(function() {
+            data.save().then(function () {
                 validateId(data);
-                return Data.findOne({item:99});
-            }).then(function(d) {
+                return Data.findOne({item: 99});
+            }).then(function (d) {
                 validateId(d);
                 validateData1(d);
             }).then(done, done);
         });
 
-        it('should populate all fields', function(done) {
+        it('should populate all fields', function (done) {
             let address = Address.create({
                 street: '123 Fake St.',
                 city: 'Cityville',
@@ -112,7 +81,7 @@ describe('Client', function() {
 
             let dog = Pet.create({
                 type: 'dog',
-                name: 'Fido',
+                name: 'Fido'
             });
 
             let user = User.create({
@@ -122,20 +91,20 @@ describe('Client', function() {
                 address: address
             });
 
-            Promise.all([address.save(), dog.save()]).then(function() {
+            Promise.all([address.save(), dog.save()]).then(function () {
                 validateId(address);
                 validateId(dog);
                 return user.save();
-            }).then(function() {
+            }).then(function () {
                 validateId(user);
                 return User.findOne({_id: user._id}, {populate: true});
-            }).then(function(u) {
+            }).then(function (u) {
                 expect(u.pet).to.be.an.instanceof(Pet);
                 expect(u.address).to.be.an.instanceof(Address);
             }).then(done, done);
         });
 
-        it('should not populate any fields', function(done) {
+        it('should not populate any fields', function (done) {
             let address = Address.create({
                 street: '123 Fake St.',
                 city: 'Cityville',
@@ -144,7 +113,7 @@ describe('Client', function() {
 
             let dog = Pet.create({
                 type: 'dog',
-                name: 'Fido',
+                name: 'Fido'
             });
 
             let user = User.create({
@@ -154,20 +123,20 @@ describe('Client', function() {
                 address: address
             });
 
-            Promise.all([address.save(), dog.save()]).then(function() {
+            Promise.all([address.save(), dog.save()]).then(function () {
                 validateId(address);
                 validateId(dog);
                 return user.save();
-            }).then(function() {
+            }).then(function () {
                 validateId(user);
                 return User.findOne({_id: user._id}, {populate: false});
-            }).then(function(u) {
+            }).then(function (u) {
                 expect(isNativeId(u.pet)).to.be.true;
                 expect(isNativeId(u.address)).to.be.true;
             }).then(done, done);
         });
 
-        it('should populate specified fields', function(done) {
+        it('should populate specified fields', function (done) {
             let address = Address.create({
                 street: '123 Fake St.',
                 city: 'Cityville',
@@ -176,7 +145,7 @@ describe('Client', function() {
 
             let dog = Pet.create({
                 type: 'dog',
-                name: 'Fido',
+                name: 'Fido'
             });
 
             let user = User.create({
@@ -186,71 +155,71 @@ describe('Client', function() {
                 address: address
             });
 
-            Promise.all([address.save(), dog.save()]).then(function() {
+            Promise.all([address.save(), dog.save()]).then(function () {
                 validateId(address);
                 validateId(dog);
                 return user.save();
-            }).then(function() {
+            }).then(function () {
                 validateId(user);
                 return User.findOne({_id: user._id}, {populate: ['pet']});
-            }).then(function(u) {
+            }).then(function (u) {
                 expect(u.pet).to.be.an.instanceof(Pet);
                 expect(isNativeId(u.address)).to.be.true;
             }).then(done, done);
         });
     });
 
-    describe('#findOneAndUpdate()', function() {
-        it('should load and update a single object from the collection', function(done) {
+    describe('#findOneAndUpdate()', function () {
+        it('should load and update a single object from the collection', function (done) {
 
             let data = getData1();
 
-            data.save().then(function() {
+            data.save().then(function () {
                 validateId(data);
                 return Data.findOneAndUpdate({number: 1}, {source: 'wired'});
-            }).then(function(d) {
+            }).then(function (d) {
                 validateId(d);
                 expect(d.number).to.equal(1);
                 expect(d.source).to.equal('wired');
             }).then(done, done);
         });
 
-        it('should insert a single object to the collection', function(done) {
-            Data.findOne({number: 1}).then(function(d) {
+        it('should insert a single object to the collection', function (done) {
+            Data.findOne({number: 1}).then(function (d) {
                 expect(d).to.be.null;
                 return Data.findOneAndUpdate({number: 1}, {number: 1}, {upsert: true});
-            }).then(function(data) {
+            }).then(function (data) {
                 validateId(data);
                 expect(data.number).to.equal(1);
                 return Data.findOne({number: 1});
-            }).then(function(d) {
+            }).then(function (d) {
                 validateId(d);
                 expect(d.number).to.equal(1);
             }).then(done, done);
         });
     });
 
-    describe('#findOneAndDelete()', function() {
-        it('should load and delete a single object from the collection', function(done) {
+    describe('#findOneAndDelete()', function () {
+        it('should load and delete a single object from the collection', function (done) {
 
             let data = getData1();
 
-            data.save().then(function() {
+            data.save().then(function () {
                 validateId(data);
-                return Data.count({ number: 1 });
-            }).then(function(count) {
+                return Data.count({number: 1});
+            }).then(function (count) {
                 expect(count).to.be.equal(1);
                 return Data.findOneAndDelete({number: 1});
-            }).then(function(numDeleted) {
+            }).then(function (numDeleted) {
                 expect(numDeleted).to.equal(1);
-                return Data.count({ number: 1 });
-            }).then(function(count) {
+                return Data.count({number: 1});
+            }).then(function (count) {
                 expect(count).to.equal(0);
             }).then(done, done);
         });
     });
 
-    describe('#find()', function() {
+    describe('#find()', function () {
         class City extends Document {
             constructor() {
                 super();
@@ -266,7 +235,7 @@ describe('Client', function() {
 
         var Springfield, SouthPark, Quahog;
 
-        beforeEach(function(done) {
+        beforeEach(function (done) {
             Springfield = City.create({
                 name: 'Springfield',
                 population: 30720
@@ -283,16 +252,16 @@ describe('Client', function() {
             });
 
             Promise.all([Springfield.save(), SouthPark.save(), Quahog.save()])
-            .then(function() {
-                validateId(Springfield);
-                validateId(SouthPark);
-                validateId(Quahog);
-                done();
-            }); 
+                .then(function () {
+                    validateId(Springfield);
+                    validateId(SouthPark);
+                    validateId(Quahog);
+                    done();
+                });
         });
 
-        it('should load multiple objects from the collection', function(done) {
-            City.find({}).then(function(cities) {
+        it('should load multiple objects from the collection', function (done) {
+            City.find({}).then(function (cities) {
                 expect(cities).to.have.length(3);
                 validateId(cities[0]);
                 validateId(cities[1]);
@@ -300,8 +269,8 @@ describe('Client', function() {
             }).then(done, done);
         });
 
-        it('should load all objects when query is not provided', function(done) {
-            City.find().then(function(cities) {
+        it('should load all objects when query is not provided', function (done) {
+            City.find().then(function (cities) {
                 expect(cities).to.have.length(3);
                 validateId(cities[0]);
                 validateId(cities[1]);
@@ -309,8 +278,8 @@ describe('Client', function() {
             }).then(done, done);
         });
 
-        it('should sort results in ascending order', function(done) {
-            City.find({}, {sort: 'population'}).then(function(cities) {
+        it('should sort results in ascending order', function (done) {
+            City.find({}, {sort: 'population'}).then(function (cities) {
                 expect(cities).to.have.length(3);
                 validateId(cities[0]);
                 validateId(cities[1]);
@@ -321,8 +290,8 @@ describe('Client', function() {
             }).then(done, done);
         });
 
-        it('should sort results in descending order', function(done) {
-            City.find({}, {sort: '-population'}).then(function(cities) {
+        it('should sort results in descending order', function (done) {
+            City.find({}, {sort: '-population'}).then(function (cities) {
                 expect(cities).to.have.length(3);
                 validateId(cities[0]);
                 validateId(cities[1]);
@@ -333,7 +302,7 @@ describe('Client', function() {
             }).then(done, done);
         });
 
-        it('should sort results using multiple keys', function(done) {
+        it('should sort results using multiple keys', function (done) {
             let AlphaVille = City.create({
                 name: 'Alphaville',
                 population: 4388
@@ -344,9 +313,9 @@ describe('Client', function() {
                 population: 4388
             });
 
-            Promise.all([AlphaVille.save(), BetaTown.save()]).then(function() {
+            Promise.all([AlphaVille.save(), BetaTown.save()]).then(function () {
                 return City.find({}, {sort: ['population', '-name']});
-            }).then(function(cities) {
+            }).then(function (cities) {
                 expect(cities).to.have.length(5);
                 validateId(cities[0]);
                 validateId(cities[1]);
@@ -366,16 +335,16 @@ describe('Client', function() {
             }).then(done, done);
         });
 
-        it('should limit number of results returned', function(done) {
-            City.find({}, {limit: 2}).then(function(cities) {
+        it('should limit number of results returned', function (done) {
+            City.find({}, {limit: 2}).then(function (cities) {
                 expect(cities).to.have.length(2);
                 validateId(cities[0]);
                 validateId(cities[1]);
             }).then(done, done);
         });
 
-        it('should skip given number of results', function(done) {
-            City.find({}, {sort: 'population', skip: 1}).then(function(cities) {
+        it('should skip given number of results', function (done) {
+            City.find({}, {sort: 'population', skip: 1}).then(function (cities) {
                 expect(cities).to.have.length(2);
                 validateId(cities[0]);
                 validateId(cities[1]);
@@ -384,7 +353,7 @@ describe('Client', function() {
             }).then(done, done);
         });
 
-        it('should populate all fields', function(done) {
+        it('should populate all fields', function (done) {
             let address = Address.create({
                 street: '123 Fake St.',
                 city: 'Cityville',
@@ -393,7 +362,7 @@ describe('Client', function() {
 
             let dog = Pet.create({
                 type: 'dog',
-                name: 'Fido',
+                name: 'Fido'
             });
 
             let user1 = User.create({
@@ -410,15 +379,15 @@ describe('Client', function() {
                 address: address
             });
 
-            Promise.all([address.save(), dog.save()]).then(function() {
+            Promise.all([address.save(), dog.save()]).then(function () {
                 validateId(address);
                 validateId(dog);
                 return Promise.all([user1.save(), user2.save()]);
-            }).then(function() {
+            }).then(function () {
                 validateId(user1);
                 validateId(user2);
                 return User.find({}, {populate: true});
-            }).then(function(users) {
+            }).then(function (users) {
                 expect(users[0].pet).to.be.an.instanceof(Pet);
                 expect(users[0].address).to.be.an.instanceof(Address);
                 expect(users[1].pet).to.be.an.instanceof(Pet);
@@ -426,7 +395,7 @@ describe('Client', function() {
             }).then(done, done);
         });
 
-        it('should not populate any fields', function(done) {
+        it('should not populate any fields', function (done) {
             let address = Address.create({
                 street: '123 Fake St.',
                 city: 'Cityville',
@@ -435,7 +404,7 @@ describe('Client', function() {
 
             let dog = Pet.create({
                 type: 'dog',
-                name: 'Fido',
+                name: 'Fido'
             });
 
             let user1 = User.create({
@@ -452,15 +421,15 @@ describe('Client', function() {
                 address: address
             });
 
-            Promise.all([address.save(), dog.save()]).then(function() {
+            Promise.all([address.save(), dog.save()]).then(function () {
                 validateId(address);
                 validateId(dog);
                 return Promise.all([user1.save(), user2.save()]);
-            }).then(function() {
+            }).then(function () {
                 validateId(user1);
                 validateId(user2);
                 return User.find({}, {populate: false});
-            }).then(function(users) {
+            }).then(function (users) {
                 expect(isNativeId(users[0].pet)).to.be.true;
                 expect(isNativeId(users[0].address)).to.be.true;
                 expect(isNativeId(users[1].pet)).to.be.true;
@@ -468,7 +437,7 @@ describe('Client', function() {
             }).then(done, done);
         });
 
-        it('should populate specified fields', function(done) {
+        it('should populate specified fields', function (done) {
             let address = Address.create({
                 street: '123 Fake St.',
                 city: 'Cityville',
@@ -477,7 +446,7 @@ describe('Client', function() {
 
             let dog = Pet.create({
                 type: 'dog',
-                name: 'Fido',
+                name: 'Fido'
             });
 
             let user1 = User.create({
@@ -494,15 +463,15 @@ describe('Client', function() {
                 address: address
             });
 
-            Promise.all([address.save(), dog.save()]).then(function() {
+            Promise.all([address.save(), dog.save()]).then(function () {
                 validateId(address);
                 validateId(dog);
                 return Promise.all([user1.save(), user2.save()]);
-            }).then(function() {
+            }).then(function () {
                 validateId(user1);
                 validateId(user2);
                 return User.find({}, {populate: ['pet']});
-            }).then(function(users) {
+            }).then(function (users) {
                 expect(users[0].pet).to.be.an.instanceof(Pet);
                 expect(isNativeId(users[0].address)).to.be.true;
                 expect(users[1].pet).to.be.an.instanceof(Pet);
@@ -511,119 +480,119 @@ describe('Client', function() {
         });
     });
 
-    describe('#count()', function() {
-        it('should return 0 objects from the collection', function(done) {
+    describe('#count()', function () {
+        it('should return 0 objects from the collection', function (done) {
 
             let data1 = getData1();
             let data2 = getData2();
 
-            Promise.all([data1.save(), data2.save()]).then(function() {
+            Promise.all([data1.save(), data2.save()]).then(function () {
                 validateId(data1);
                 validateId(data2);
-                return Data.count({ number: 3 });
-            }).then(function(count) {
+                return Data.count({number: 3});
+            }).then(function (count) {
                 expect(count).to.be.equal(0);
             }).then(done, done);
         });
 
-        it('should return 2 matching objects from the collection', function(done) {
+        it('should return 2 matching objects from the collection', function (done) {
 
             let data1 = getData1();
             let data2 = getData2();
 
-            Promise.all([data1.save(), data2.save()]).then(function() {
+            Promise.all([data1.save(), data2.save()]).then(function () {
                 validateId(data1);
                 validateId(data2);
                 return Data.count({});
-            }).then(function(count) {
+            }).then(function (count) {
                 expect(count).to.be.equal(2);
             }).then(done, done);
         });
     });
 
-    describe('#delete()', function() {
-        it('should remove instance from the collection', function(done) {
+    describe('#delete()', function () {
+        it('should remove instance from the collection', function (done) {
 
             let data = getData1();
 
-            data.save().then(function() {
+            data.save().then(function () {
                 validateId(data);
                 return data.delete();
-            }).then(function(numDeleted) {
+            }).then(function (numDeleted) {
                 expect(numDeleted).to.be.equal(1);
-                return Data.findOne({item:99});
-            }).then(function(d) {
+                return Data.findOne({item: 99});
+            }).then(function (d) {
                 expect(d).to.be.null;
             }).then(done, done);
         });
     });
 
-    describe('#deleteOne()', function() {
-        it('should remove the object from the collection', function(done) {
+    describe('#deleteOne()', function () {
+        it('should remove the object from the collection', function (done) {
 
             let data = getData1();
 
-            data.save().then(function() {
+            data.save().then(function () {
                 validateId(data);
                 return Data.deleteOne({number: 1});
-            }).then(function(numDeleted) {
+            }).then(function (numDeleted) {
                 expect(numDeleted).to.be.equal(1);
                 return Data.findOne({number: 1});
-            }).then(function(d) {
+            }).then(function (d) {
                 expect(d).to.be.null;
             }).then(done, done);
         });
     });
 
-    describe('#deleteMany()', function() {
-        it('should remove multiple objects from the collection', function(done) {
+    describe('#deleteMany()', function () {
+        it('should remove multiple objects from the collection', function (done) {
 
             let data1 = getData1();
             let data2 = getData2();
 
-            Promise.all([data1.save(), data2.save()]).then(function() {
+            Promise.all([data1.save(), data2.save()]).then(function () {
                 validateId(data1);
                 validateId(data2);
                 return Data.deleteMany({});
-            }).then(function(numDeleted) {
+            }).then(function (numDeleted) {
                 expect(numDeleted).to.be.equal(2);
                 return Data.find({});
-            }).then(function(datas) {
+            }).then(function (datas) {
                 expect(datas).to.have.length(0);
             }).then(done, done);
         });
 
-        it('should remove all objects when query is not provided', function(done) {
+        it('should remove all objects when query is not provided', function (done) {
 
             let data1 = getData1();
             let data2 = getData2();
 
-            Promise.all([data1.save(), data2.save()]).then(function() {
+            Promise.all([data1.save(), data2.save()]).then(function () {
                 validateId(data1);
                 validateId(data2);
                 return Data.deleteMany();
-            }).then(function(numDeleted) {
+            }).then(function (numDeleted) {
                 expect(numDeleted).to.be.equal(2);
                 return Data.find({});
-            }).then(function(datas) {
+            }).then(function (datas) {
                 expect(datas).to.have.length(0);
             }).then(done, done);
         });
     });
 
-    describe('#clearCollection()', function() {
-        it('should remove all objects from the collection', function(done) {
+    describe('#clearCollection()', function () {
+        it('should remove all objects from the collection', function (done) {
 
             let data1 = getData1();
             let data2 = getData2();
 
-            Promise.all([data1.save(), data2.save()]).then(function() {
+            Promise.all([data1.save(), data2.save()]).then(function () {
                 validateId(data1);
                 validateId(data2);
                 return Data.clearCollection();
-            }).then(function() {
+            }).then(function () {
                 return Data.find();
-            }).then(function(datas) {
+            }).then(function (datas) {
                 expect(datas).to.have.length(0);
             }).then(done, done);
         });

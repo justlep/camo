@@ -1,42 +1,14 @@
-'use strict';
+import {expect} from 'chai';
+import {Document} from '../lib/document.js';
+import {validateId} from './util.js';
+import {initMochaHooksForNedb} from './database.js';
 
-const _ = require('lodash');
-const fs = require('fs');
-const expect = require('chai').expect;
-const connect = require('../index').connect;
-const Document = require('../index').Document;
-const validateId = require('./util').validateId;
 
 describe('NeDbClient', function() {
 
-    const url = 'nedb://memory';
-    let database = null;
-
-    // TODO: This is acting weird. Randomly passes/fails. Seems to
-    // be caused by document.test.js. When that one doesn't run,
-    // this one always passes. Maybe some leftover files are still
-    // floating around due to document.test.js?
-    before(function(done) {
-        connect(url).then(function(db) {
-            database = db;
-            return database.dropDatabase();
-        }).then(function(){
-            return done();
-        });
-    });
-
-    beforeEach(function(done) {
-        done();
-    });
-
-    afterEach(function(done) {
-        database.dropDatabase().then(function() {}).then(done, done);
-    });
-
-    after(function(done) {
-        done();
-    }); 
-
+    initMochaHooksForNedb();
+    
+    
     /*describe('#dropDatabase()', function() {
         it('should drop the database and delete all its data', function(done) {
 

@@ -1,7 +1,5 @@
-'use strict';
 
-exports.connect = require('./lib/db').connect;
-exports.getClient = require('./lib/clients').getClient;
-
-exports.Document = require('./lib/document');
-exports.EmbeddedDocument = require('./lib/embedded-document');
+export {connect} from 'lib/nedbclient.js';
+export {getClientInstance as getClient} from 'lib/client.js';
+export {Document} from 'lib/document.js';
+export {EmbeddedDocument} from 'lib/embedded-document.js';
