@@ -12,7 +12,7 @@
     "test:memory-nedb-justlep": "npm --NEDB_VERSION=justlep run test",
     "test:persistent-nedb-original": "npm --NEDB_VERSION=original --NEDB_PERSISTENT=true run test",
     "test:persistent-nedb-justlep": "npm --NEDB_VERSION=justlep --NEDB_PERSISTENT=true run test",
-    "lint": "eslint --max-warnings 5 --ext js index.js lib/** test/**"
+    "lint": "eslint --max-warnings 5 --ext js index.js lib/**/*.js test/**/*.js"
   },
   "author": "Lennart Pegel <github@justlep.net>",
   "contributors": [

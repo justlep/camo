@@ -33,7 +33,7 @@ describe('Document', function () {
             expect(user[IS_DOCUMENT]).to.be.true;
             expect(user[IS_EMBEDDED]).to.be.undefined;
             expect(user[IS_BASE_DOCUMENT]).to.be.true;
-            
+
             user.save().then(function () {
                 validateId(user);
             }).then(done, done);
@@ -196,8 +196,8 @@ describe('Document', function () {
         it('should allow schemas to be extended', function (done) {
 
             class User extends Document {
-                constructor(collection) {
-                    super(collection);
+                constructor() {
+                    super();
                     this.firstName = String;
                     this.lastName = String;
                 }
@@ -226,8 +226,8 @@ describe('Document', function () {
         it('should allow schemas to be overridden', function (done) {
 
             class Vehicle extends Document {
-                constructor(collection) {
-                    super(collection);
+                constructor() {
+                    super();
                     this.numWheels = {
                         type: Number,
                         default: 4
@@ -1637,10 +1637,6 @@ describe('Document', function () {
 
                 static collectionName() {
                     return 'people';
-                }
-
-                getFoo() {
-                    return 'foo';
                 }
             }
 

@@ -4,15 +4,23 @@
 [![Node.js Version](https://img.shields.io/node/v/@justlep/camo.svg)]()
 
 Changes: 
-* Updated dependencies with security issues (lodash, mocha)  
-* Removed mongo support altogether, leaving NeDB stuff only
+* Updated dependencies
+* Complete code refactoring & optimization (*in progress*)
+* **Breaking:** Removed mongo support altogether, leaving NeDB stuff only (for now)
 * Allows using any fork of NeDB, like [@justlep/nedb](https://github.com/justlep/nedb) instead of the original
   ```javascript
   import {Datastore} from '@justlep/nedb';
+  import {connect} from '@justlep/camo';
   
-  await camo.connect('nedb:///path/to/dbfiles', {NedbDatastoreClass: Datastore});
+  await connect('nedb:///path/to/dbfiles', Datastore);
+  
+  // The Datastore argument is now mandatory.
+  // For using the original 'nedb@1.8.0', you would do
+  
+  import Datastore from 'nedb'; 
+  await connect('nedb:///path/to/dbfiles', Datastore);
   ```
-* Removed `nedb` from `optionalDependencies`. Must install manually
+* **Breaking:** `nedb` is removed from the `optionalDependencies`. You must install the version you want manually:
   ```sh
   # the unmaintained original NeDB v1.8.0
   npm i --save nedb
@@ -20,10 +28,9 @@ Changes:
   # or for Node 14+ and ESM (see code example above)
   npm i --save @justlep/nedb    
   ```
+* **Breaking:** Accessing `id` properties of `Document` or `EmbeddedDocument` no longer displays deprecation warnings, but will throw an Error.
+* **Breaking**: Passing a collection name to `new MyDocument(collectionName)` now throws an `Error` (must override `static collectionName()` instead)
 
-I haven't done any code cleanup or refactoring (yet). 
-
-For a better maintained fork of camo, try https://github.com/Luidog/marpat
 
 # Camo
 
