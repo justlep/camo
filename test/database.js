@@ -1,12 +1,20 @@
 import {connect} from '../lib/nedbclient.js';
 import {resolveProjectPath} from './util.js';
+import {readFileSync} from 'node:fs';
 
-// common settings for all tests:
+const IN_MEMORY = process.env.NEDB_PERSISTENT !== 'true';
 
-const IN_MEMORY = 1;
+const NEDB_PACKAGE_NAME = (process.env.npm_config_NEDB_VERSION === 'justlep') ? '@justlep/nedb' : 'nedb';
 
-const NEDB_PACKAGE_NAME = 1 ? '@justlep/nedb' : 'nedb'; // eslint-disable-line
+let packageSemverVersion;
+try {
+    packageSemverVersion = JSON.parse(readFileSync(resolveProjectPath(`node_modules/${NEDB_PACKAGE_NAME}/package.json`))).version;
+} catch (err) {
+    packageSemverVersion = '??'
+}
 
+let infoStr = `Using NeDB package: ${NEDB_PACKAGE_NAME}@${packageSemverVersion} (${IN_MEMORY ? 'in-memory' : 'persistent'})`;
+console.log(`${'-'.repeat(infoStr.length)}\n${infoStr}\n${'-'.repeat(infoStr.length)}`);
 
 /** @type {NeDbClient} */
 let _database;
