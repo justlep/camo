@@ -10,7 +10,7 @@ let packageSemverVersion;
 try {
     packageSemverVersion = JSON.parse(readFileSync(resolveProjectPath(`node_modules/${NEDB_PACKAGE_NAME}/package.json`))).version;
 } catch (err) {
-    packageSemverVersion = '??'
+    packageSemverVersion = '??';
 }
 
 let infoStr = `Using NeDB package: ${NEDB_PACKAGE_NAME}@${packageSemverVersion} (${IN_MEMORY ? 'in-memory' : 'persistent'})`;
