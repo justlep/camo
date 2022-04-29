@@ -3,4 +3,4 @@ node_js:
   - "14"
 install:
   - npm i
-  - npm i nedb@1.8.0
+  - npm i @justlep/nedb@2.0.5
