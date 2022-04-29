@@ -4,6 +4,7 @@ import {EmbeddedDocument} from '../lib/embedded-document.js';
 import {validateId} from './util.js';
 import {ValidationError} from '../lib/errors.js';
 import {initMochaHooksForNedb} from './database.js';
+import {IS_BASE_DOCUMENT, IS_DOCUMENT, IS_EMBEDDED, isDocument, isEmbeddedDocument, isReferenceable} from '../lib/validate.js';
 
 
 describe('Embedded', function () {
@@ -33,6 +34,14 @@ describe('Embedded', function () {
             data.mod = EmbeddedModel.create();
             data.mod.str = 'some data';
             data.num = 1;
+
+            expect(isDocument(data.mod)).to.be.false;
+            expect(isEmbeddedDocument(data.mod)).to.be.true;
+            expect(isReferenceable(data.mod)).to.be.false;
+
+            expect(data.mod[IS_DOCUMENT]).to.be.undefined;
+            expect(data.mod[IS_EMBEDDED]).to.be.true;
+            expect(data.mod[IS_BASE_DOCUMENT]).to.be.true;
 
             data.save().then(function () {
                 expect(data.mod._id).to.be.undefined;

@@ -1,7 +1,7 @@
 import {expect} from 'chai';
 import {Document} from '../lib/document.js';
 import {fail, validateId, expectError, Data} from './util.js';
-import {isDocument} from '../lib/validate.js';
+import {IS_BASE_DOCUMENT, IS_DOCUMENT, IS_EMBEDDED, isDocument, isEmbeddedDocument, isReferenceable} from '../lib/validate.js';
 import {ValidationError} from '../lib/errors.js';
 import {initMochaHooksForNedb} from './database.js';
 
@@ -26,6 +26,14 @@ describe('Document', function () {
             user.firstName = 'Billy';
             user.lastName = 'Bob';
 
+            expect(isDocument(user)).to.be.true;
+            expect(isEmbeddedDocument(user)).to.be.false;
+            expect(isReferenceable(user)).to.be.true;
+            
+            expect(user[IS_DOCUMENT]).to.be.true;
+            expect(user[IS_EMBEDDED]).to.be.undefined;
+            expect(user[IS_BASE_DOCUMENT]).to.be.true;
+            
             user.save().then(function () {
                 validateId(user);
             }).then(done, done);
@@ -565,7 +573,7 @@ describe('Document', function () {
                 // of references, so the boss's reference
                 // to the employee is still the ID.
                 expect(b.employees[0].boss).to.not.be.null;
-                expect(!isDocument(b.employees[0].boss)).to.be.true;
+                expect(isDocument(b.employees[0].boss)).to.be.false;
             }).then(done, done);
         });
 
