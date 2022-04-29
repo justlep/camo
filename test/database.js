@@ -2,8 +2,11 @@ import {connect} from '../lib/nedbclient.js';
 import {resolveProjectPath} from './util.js';
 
 // common settings for all tests:
-const IN_MEMORY = true;
-const NEDB_PACKAGE_NAME = 'nedb';  // 'nedb', '@justlep/nedb' or any other fork
+
+const IN_MEMORY = 1;
+
+const NEDB_PACKAGE_NAME = 1 ? '@justlep/nedb' : 'nedb'; // eslint-disable-line
+
 
 /** @type {NeDbClient} */
 let _database;

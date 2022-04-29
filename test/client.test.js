@@ -1,8 +1,8 @@
 import {expect} from 'chai';
 import {Document} from '../lib/document.js';
 import {getData1, getData2, validateId, validateData1, Data} from './util.js';
-import {isNativeId} from '../lib/validate.js';
 import {initMochaHooksForNedb} from './database.js';
+import {isNativeId} from '../lib/client.js';
 
 describe('Client', function () {
 
