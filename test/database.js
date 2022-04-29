@@ -2,18 +2,18 @@ import {connect} from '../lib/nedbclient.js';
 import {resolveProjectPath} from './util.js';
 import {readFileSync} from 'node:fs';
 
-const IN_MEMORY = process.env.NEDB_PERSISTENT !== 'true';
+const inMemory = process.env.npm_config_NEDB_PERSISTENT !== 'true';
 
-const NEDB_PACKAGE_NAME = (process.env.npm_config_NEDB_VERSION === 'justlep') ? '@justlep/nedb' : 'nedb';
+const nedbPackageName = (process.env.npm_config_NEDB_VERSION === 'justlep') ? '@justlep/nedb' : 'nedb';
 
-let packageSemverVersion;
+let nedbVersion;
 try {
-    packageSemverVersion = JSON.parse(readFileSync(resolveProjectPath(`node_modules/${NEDB_PACKAGE_NAME}/package.json`))).version;
+    nedbVersion = JSON.parse(readFileSync(resolveProjectPath(`node_modules/${nedbPackageName}/package.json`))).version;
 } catch (err) {
-    packageSemverVersion = '??';
+    nedbVersion = '??';
 }
 
-let infoStr = `Using NeDB package: ${NEDB_PACKAGE_NAME}@${packageSemverVersion} (${IN_MEMORY ? 'in-memory' : 'persistent'})`;
+let infoStr = `Using NeDB package: ${nedbPackageName}@${nedbVersion} (${inMemory ? 'in-memory' : 'persistent'})`;
 console.log(`${'-'.repeat(infoStr.length)}\n${infoStr}\n${'-'.repeat(infoStr.length)}`);
 
 /** @type {NeDbClient} */
@@ -26,13 +26,13 @@ let _database;
  */
 export function initMochaHooksForNedb() {
 
-    const nedbConnectUrl = `nedb://${IN_MEMORY ? 'memory' : resolveProjectPath('test/nedbdata')}`;
+    const nedbConnectUrl = `nedb://${inMemory ? 'memory' : resolveProjectPath('test/nedbdata')}`;
 
-    before(done => _database ? done() : void import(NEDB_PACKAGE_NAME)
+    before(done => _database ? done() : void import(nedbPackageName)
         .catch(err => {
-            console.error(`Missing package ${NEDB_PACKAGE_NAME}. ` +
-                          `Did you install it via "npm i -g ${NEDB_PACKAGE_NAME}", `+
-                          `and made it accessible via "npm link ${NEDB_PACKAGE_NAME}"?`);
+            console.error(`Missing package ${nedbPackageName}. ` +
+                          `Did you install it via "npm i -g ${nedbPackageName}", `+
+                          `and made it accessible via "npm link ${nedbPackageName}"?`);
             throw err;
         })
         .then(nedbModule => nedbModule.Datastore || nedbModule.default) // unlike nedb, @justlep/nedb has no default export
