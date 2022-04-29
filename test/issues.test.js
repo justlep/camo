@@ -2,8 +2,8 @@ import {expect} from 'chai';
 import {Document} from '../lib/document.js';
 import {EmbeddedDocument} from '../lib/embedded-document.js';
 import {validateId} from './util.js';
-import {ValidationError} from '../lib/errors.js';
 import {initMochaHooksForNedb} from './database.js';
+import {ValidationError} from '../lib/validate.js';
 
 
 describe('Issues', function () {

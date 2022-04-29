@@ -2,9 +2,16 @@ import {expect} from 'chai';
 import {Document} from '../lib/document.js';
 import {EmbeddedDocument} from '../lib/embedded-document.js';
 import {validateId} from './util.js';
-import {ValidationError} from '../lib/errors.js';
 import {initMochaHooksForNedb} from './database.js';
-import {IS_BASE_DOCUMENT, IS_DOCUMENT, IS_EMBEDDED, isDocument, isEmbeddedDocument, isReferenceable} from '../lib/validate.js';
+import {
+    IS_BASE_DOCUMENT,
+    IS_DOCUMENT,
+    IS_EMBEDDED,
+    isDocument,
+    isEmbeddedDocument,
+    isReferenceable,
+    ValidationError
+} from '../lib/validate.js';
 
 
 describe('Embedded', function () {

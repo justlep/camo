@@ -6,7 +6,8 @@
 Breaking Changes
 - Signature of `connect` is now `connect(nedbUrl, DatastoreClass)`.  
 - Accessing `id` properties of `Document` or `EmbeddedDocument` no longer displays deprecation warnings, but will throw an Error. 
-* **Breaking**: Passing a collection name to `new MyDocument(collectionName)` now throws an `Error` (must override `static collectionName()` instead)
+* Passing a collection name to `new MyDocument(collectionName)` now throws an `Error` (must override `static collectionName()` instead)
+* Removed deprecated `Document.loadOne()`, `loadOneAndUpdate()`, `loadOneAndDelete()`, `loadMany()`
 
 ## 0.12.5 (2022-04-22)
 
