@@ -1,6 +1,5 @@
 {
     "env": {
-        "jest": true,
         "browser": false,
         "node": true,
         "es6": true
@@ -52,11 +51,8 @@
         "wrap-iife": [2, "inside"],
         "yoda": [2, "never"],
         "no-implicit-globals": 2
-        // "no-param-reassign": 2,
-        //"indent": [2, 4]
-    },
-    "globals": {
-        "QRCode": false
+        // "indent": [2, 4]
+        // "no-param-reassign": 2
     },
     "plugins": [
         "log-filenames"
