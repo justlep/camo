@@ -8,6 +8,11 @@ Breaking Changes
 - Accessing `id` properties of `Document` or `EmbeddedDocument` no longer displays deprecation warnings, but will throw an Error. 
 * Passing a collection name to `new MyDocument(collectionName)` now throws an `Error` (must override `static collectionName()` instead)
 * Removed deprecated `Document.loadOne()`, `loadOneAndUpdate()`, `loadOneAndDelete()`, `loadMany()`
+* `null` values for properties marked `required` will throw during validation, too
+* Disallowed wildcard types (`Object`, `[]`, `Array`, `[Object]`).
+  Instead, added cleaner custom type syntax (see https://github.com/justlep/camo/issues/1)
+* Saving, loading and `Document.toJSON` now strictly adhere to the document's schema, i.e. ignore 
+  any instance properties not defined in the class' schema. 
 
 ## 0.12.5 (2022-04-22)
 

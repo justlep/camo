@@ -325,7 +325,10 @@ describe('Issues', function () {
         });
     });
 
-    describe('#53', function () {
+    /**
+     * Obsolete since wildcard arrays are now forbidden
+     */
+    xdescribe('#53', function () {
         /* 
          * Camo should validate that all properties conform to
          * the type they were given in the schema. However,
@@ -360,32 +363,6 @@ describe('Issues', function () {
             }).then(done, done);
         });
 
-        it('should validate [] types properly', function (done) {
-
-            class Foo extends Document {
-                constructor() {
-                    super();
-
-                    this.bar = [];
-                }
-            }
-
-            let foo = Foo.create({bar: [1, 2, 3]});
-
-            foo.save().then(function (f) {
-                expect(f.bar).to.have.length(3);
-                expect(f.bar).to.include(1);
-                expect(f.bar).to.include(2);
-                expect(f.bar).to.include(3);
-
-                foo.bar = 2;
-                return foo.save();
-            }).then(function (f) {
-                expect.fail(null, Error, 'Expected error, but got none.');
-            }).catch(function (error) {
-                expect(error).to.be.instanceof(ValidationError);
-            }).then(done, done);
-        });
     });
 
     describe('#55', function () {

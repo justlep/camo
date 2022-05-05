@@ -15,6 +15,7 @@ describe('Document', function () {
 
     initMochaHooksForNedb();
 
+    // TODO add tests ensuring that only properties get persisted (and loaded) which are defined in a Document's schema  
 
     describe('instantiation', function () {
         it('should allow creation of instance', function (done) {
@@ -659,21 +660,73 @@ describe('Document', function () {
             }).then(done, done);
         });
 
-        it('should allow object types', function (done) {
+        it('should allow date type arrays', function (done) {
 
-            class ObjectModel extends Document {
+            class DateArrModel extends Document {
                 constructor() {
                     super();
-                    this.schema({obj: {type: Object}});
+                    this.schema({dates: {type: [Date]}});
                 }
             }
 
-            let data = ObjectModel.create();
-            data.obj = {hi: 'bye'};
+            let data = DateArrModel.create();
+            let now = new Date();
+            data.dates.push(now, new Date(now.getTime() + 1));
 
             data.save().then(function () {
                 validateId(data);
-                expect(data.obj.hi).to.not.be.null;
+                let [d1, d2] = data.dates;
+                expect(d1.valueOf()).to.be.equal(now.valueOf());
+                expect(d2.valueOf()).to.be.equal(now.valueOf() + 1);
+            }).then(done, done);
+        });
+
+        it('should disallow custom/wildcard object types w/o toData+fromData+validate', function () {
+
+            for (const typeForKey of [Object, {type: Object}, Array, []]) {
+                class ObjectModel extends Document {
+                    constructor() {
+                        super();
+                        this.schema({obj: typeForKey});
+                    }
+                }
+
+                expect(() => void ObjectModel.create()).to.throw('is custom-type, requiring [toData,fromData,validate]');
+            }
+        });
+        
+        it('should allow custom object types', function (done) {
+
+            class CustomObjectModel extends Document {
+                constructor() {
+                    super();
+                    this.schema({obj: {
+                        type: Object,
+                        fromData: JSON.parse,
+                        toData: JSON.stringify,
+                        validate: (o) => o && typeof o === 'object' && o.hi === 'bye'
+                    }});
+                }
+            }
+
+            let data = CustomObjectModel.create();
+
+            data.save().then(() => {
+                expect.fail(null, Error, 'Expected error, but got none.');
+            }).catch(error => {
+                expect(error).to.be.instanceof(ValidationError);
+                expect(error.message).to.equal('Value for CustomObjectModel.obj was rejected by custom validate()');
+                data.obj = {hi: 'foo'};
+                return data.save();
+            }).then(() => {
+                expect.fail(null, Error, 'Expected error, but got none.');
+            }).catch(error => {
+                expect(error).to.be.instanceof(ValidationError);
+                expect(error.message).to.equal('Value for CustomObjectModel.obj was rejected by custom validate()');
+                data.obj.hi = 'bye';
+                return data.save();
+            }).then(() => {
+                validateId(data);
                 expect(data.obj.hi).to.be.equal('bye');
             }).then(done, done);
         });
@@ -692,28 +745,57 @@ describe('Document', function () {
 
             data.save().then(function () {
                 validateId(data);
-                expect(data.buf.toString('ascii')).to.be.equal('hello');
+                expect(data.buf.toString()).to.be.equal('hello');
             }).then(done, done);
         });
 
-        it('should allow array types', function (done) {
+        it('should disallow array types with wildcard Object elements', () => {
 
-            class ArrayModel extends Document {
+            class WildcardArrayModel extends Document {
                 constructor() {
                     super();
-                    this.schema({arr: {type: Array}});
+                    this.schema({obj: [Object]});
                 }
             }
 
-            let data = ArrayModel.create();
-            data.arr = [1, 'number', true];
+            expect(() => WildcardArrayModel.create()).to.throw('is array-type with custom-type elements');
+        });
+        
+        it('should allow custom-type arrays', function (done) {
 
-            data.save().then(function () {
+            class CustomArrayDocument extends Document {
+                constructor() {
+                    super();
+                    this.schema({arr: {
+                        type: Object,
+                        fromData: a => a,
+                        toData: a => a,
+                        validate: a => Array.isArray(a) && a.every(elem => typeof elem === 'string' || typeof elem === 'number')
+                    }});
+                }
+            }
+
+            let data = CustomArrayDocument.create();
+
+            data.arr = /../;
+            
+            data.save().then(() => {
+                expect.fail(null, Error, 'Expected error, but got none.');
+            }).catch(error => {
+                expect(error).to.be.instanceof(ValidationError);
+                expect(error.message).to.equal('Value for CustomArrayDocument.arr was rejected by custom validate()');
+                data.arr = [1, 'foo', true];
+                return data.save();
+            }).then(() => {
+                expect.fail(null, Error, 'Expected error, but got none.');
+            }).catch(error => {
+                expect(error).to.be.instanceof(ValidationError);
+                expect(error.message).to.equal('Value for CustomArrayDocument.arr was rejected by custom validate()');
+                data.arr.pop();
+                return data.save();
+            }).then(() => {
                 validateId(data);
-                expect(data.arr).to.have.length(3);
-                expect(data.arr).to.include(1);
-                expect(data.arr).to.include('number');
-                expect(data.arr).to.include(true);
+                expect(data.arr).to.deep.equal([1, 'foo']);
             }).then(done, done);
         });
 
@@ -1337,6 +1419,9 @@ describe('Document', function () {
 
                     this.name = {
                         type: Object,
+                        toData: x => x,
+                        fromData: x => x,
+                        validate: () => true,
                         required: true
                     };
                 }
@@ -1365,6 +1450,9 @@ describe('Document', function () {
 
                     this.names = {
                         type: Array,
+                        toData: x => x,
+                        fromData: x => x,
+                        validate: () => true, // 'required'-check is run first, so validate() never gets called during this test
                         required: true
                     };
                 }
@@ -1421,6 +1509,9 @@ describe('Document', function () {
 
                     this.names = {
                         type: Object,
+                        fromData: x => x,
+                        toData: x => x,
+                        validate: () => true, // is run AFTER required-check, so is never called in this test
                         required: true
                     };
                 }

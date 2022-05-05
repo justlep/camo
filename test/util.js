@@ -1,7 +1,9 @@
-import {expect} from 'chai';
+import {expect, config}  from 'chai';
 import {join, resolve} from 'path';
 import {fileURLToPath} from 'url';
 import {Document} from '../lib/document.js';
+
+config.truncateThreshold = 0; // disable '...' truncating in chai console output
 
 const PROJECT_ROOT_PATH = resolve(fileURLToPath(import.meta.url), '../..');
 
