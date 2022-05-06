@@ -13,6 +13,11 @@ Breaking Changes
   Instead, added cleaner custom type syntax (see https://github.com/justlep/camo/issues/1)
 * Saving, loading and `Document.toJSON` now strictly adhere to the document's schema, i.e. ignore 
   any instance properties not defined in the class' schema. 
+* strict `Date` handling: numbers and strings assigned to `Date`-type properties will 
+  no longer be auto-converted to `Date` instances before save(), but throw `ValidationError` instead.
+  Only exception: the schema's `default` value (or function return value) may still be string/number
+  and be auto-converted to `Date` on Document creation. 
+
 
 ## 0.12.5 (2022-04-22)
 

@@ -55,7 +55,7 @@ export const getData1 = function() {
     data.source = 'arstechnica';
     data.item = 99;
     data.values = [33, 101, -1];
-    data.date = 1434304033241;
+    data.date = new Date(1434304033241);
     return data;
 };
 
@@ -73,7 +73,7 @@ export const getData2 = function() {
     data.source = 'reddit';
     data.item = 26;
     data.values = [1, 2, 3, 4];
-    data.date = 1434304039234;
+    data.date = new Date(1434304039234);
     return data;
 };
 

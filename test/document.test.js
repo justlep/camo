@@ -1,4 +1,4 @@
-import {expect} from 'chai';
+import {expect, assert} from 'chai';
 import {Document} from '../lib/document.js';
 import {fail, validateId, expectError, Data} from './util.js';
 import {
@@ -911,6 +911,8 @@ describe('Document', function () {
                 expect(p.age).to.be.undefined;
             }).then(done, done);
         });
+        
+        // TODO add tests for default = (string|number|Date|function) on Date-type properties 
     });
 
     describe('choices', function () {
@@ -1121,8 +1123,9 @@ describe('Document', function () {
         });
     });
 
-    describe('canonicalize', function () {
-        it('should ensure timestamp dates are converted to Date objects', function (done) {
+    describe('Document.create() with Date-type properties', function () {
+        
+        it('should ensure timestamp dates are auto-converted to Date objects', function (done) {
 
             class Person extends Document {
                 constructor() {
@@ -1175,15 +1178,62 @@ describe('Document', function () {
 
             person.save().then(function () {
                 validateId(person);
+                expect(person.birthday).to.be.instanceOf(Date);
+                expect(person.graduationDate).to.be.instanceOf(Date);
+                expect(person.weddingDate).to.be.instanceOf(Date);
+                
                 expect(person.birthday.valueOf()).to.be.equal(birthday.valueOf());
                 expect(person.graduationDate.valueOf()).to.be.equal(graduationDate.valueOf());
                 expect(person.weddingDate.valueOf()).to.be.equal(weddingDate.valueOf());
             }).then(done, done);
         });
+        
+        it('should not fix any wrong-typed Date values AFTER Document.create()', done => {
+            const D = new Date();
+            
+            class DPerson extends Document {
+                constructor() {
+                    super();
+                    this.birthday = Date;
+                }
+                static collectionName() {
+                    return 'people';
+                }
+            }
+
+            let person = DPerson.create({
+                birthday: Date.now()
+            });
+            
+            assert.instanceOf(person.birthday, Date); // auto-conversion during create()
+            assert.doesNotThrow(() => person.validate());
+            person.birthday = new Date().toISOString();
+            expect(() => person.validate()).to.throw('DPerson.birthday should be Date, but is string');
+            person.birthday = Date.now();
+            expect(() => person.validate()).to.throw('DPerson.birthday should be Date, but is number');
+
+            person.save().then(() => {
+                expect.fail(null, Error, 'Expected error, but got none.');
+            }).catch(error => {
+                expect(error).to.be.instanceof(ValidationError);
+                expect(error.message).to.equal('Value for DPerson.birthday should be Date, but is number');
+                person.birthday = D;
+                return person.save();
+            }).then(() => {
+                assert.isTrue(person.birthday === D); // left untouched by save()
+                return DPerson.findOne({'_id': person._id});
+            }).then(p => {
+                expect(p).to.be.instanceOf(DPerson);
+                expect(p).not.to.equal(person);
+                expect(p._id).to.equal(person._id);
+                assert.equal(p.birthday.getTime(), person.birthday.getTime());
+            }).then(done, done);
+            
+        });
     });
 
     describe('required', function () {
-        it('should accept empty value that is not reqired', function (done) {
+        it('should accept empty value that is not required', function (done) {
 
             class Person extends Document {
                 constructor() {
