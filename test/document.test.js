@@ -15,8 +15,6 @@ describe('Document', function () {
 
     initMochaHooksForNedb();
 
-    // TODO add tests ensuring that only properties get persisted (and loaded) which are defined in a Document's schema  
-
     describe('instantiation', function () {
         it('should allow creation of instance', function (done) {
 
@@ -1794,5 +1792,163 @@ describe('Document', function () {
             expect(json).to.have.keys(['_id', 'name']);
             done();
         });
+    });
+    
+    it('should by default throw on unknown data keys during creation', () => {
+        class Foo extends Document {
+            constructor() {
+                super();
+                this.name = String;
+            }
+        }
+        
+        expect(() => Foo.create({name: 'Tom'})).not.to.throw();
+        expect(() => Foo.create({name: 'Beelz', xxx: 666})).to.throw('Unknown key "xxx" in data object for new Foo instance');
+    });
+    
+    it('allows overriding onUnknownData() for accepting unknown data keys', (done) => {
+        let totalUnkownKeys = 0;
+        
+        class Foo extends Document {
+            constructor() {
+                super();
+                this.name = String;
+            }
+            /** @override */
+            onUnknownData(dataKey, dataVal) {
+                this[dataKey] = dataVal;
+                totalUnkownKeys++;
+            }
+        }
+
+        let foo;
+        expect(() => foo = Foo.create({name: 'Tom', xxx: 666})).not.to.throw();
+        assert.equal(foo.name, 'Tom');
+        assert.equal(foo.xxx, 666);
+        assert.equal(totalUnkownKeys, 1);
+
+        foo.save().then(function () {
+            let {_id} = foo;
+            return Foo.findOne({_id});
+        }).then(f => {
+            expect(f).to.be.instanceof(Foo);
+            assert.notEqual(f, foo);
+            assert.equal(f.name, foo.name);
+
+            // xxx was not persisted, so it shouldn't be in f, and 'onUnknownKeys' should not have been called for it
+            assert.isUndefined(f.xxx);
+            assert.equal(totalUnkownKeys, 1);
+        }).then(done, done);
+    });
+    
+    it('allows overriding onUnknownData() for ignoring unknown data keys', (done) => {
+        let totalUnkownKeys = 0;
+
+        class Foo extends Document {
+            constructor() {
+                super();
+                this.name = String;
+            }
+            /** @override */
+            onUnknownData(dataKey, dataVal) {
+                totalUnkownKeys++; // just count, but discard key/value
+            }
+        }
+
+        let foo = Foo.create({name: 'Tom', xxx: 666});
+        assert.equal(foo.name, 'Tom');
+        assert.isUndefined(foo.xxx);
+        assert.equal(totalUnkownKeys, 1);
+
+        foo.save().then(() => Foo.findOne({_id: foo._id})).then(f => {
+            expect(f).to.be.instanceof(Foo);
+            assert.notEqual(f, foo);
+            assert.equal(f.name, foo.name);
+
+            // xxx was not persisted, so it shouldn't be in f, and 'onUnknownKeys' should not have been called for it
+            assert.isUndefined(f.xxx);
+            assert.equal(totalUnkownKeys, 1);
+        }).then(done, done);
+    });
+    
+    it('should not persist or restore data that is not part of the Document schema', (done) => {
+        const COMMON_COLLECTION_NAME = 'people99';
+
+        let totalUnkown = 0,
+            lastUnkownKey;
+        
+        class NameOnlyPerson extends Document {
+            constructor() {
+                super();
+                this.name = String;
+            }
+            static collectionName() {
+                return COMMON_COLLECTION_NAME;
+            }
+            /** @override */
+            onUnknownData(key, val) {
+                this[key] = val; // accept unknown keys first
+                totalUnkown++;
+                lastUnkownKey = key;
+            }
+        }
+        
+        class Person extends NameOnlyPerson {
+            constructor() {
+                super();
+                this.name = String;
+                this.birthday = Date;
+            }
+            static collectionName() {
+                return COMMON_COLLECTION_NAME;
+            }
+        }
+        
+        let person = Person.create({
+                name: 'foo',
+                birthday: new Date(),
+                otherProp: 'bar'
+            }),
+            _id;
+
+        person.save().then(function () {
+            assert.equal(person.name, 'foo');
+            assert.equal(person.otherProp, 'bar'); // still the same, non-re-loaded instance
+            _id = person._id;
+
+            assert.equal(totalUnkown, 1);
+            assert.equal(lastUnkownKey, 'otherProp');
+            
+            return Person.findOne({_id});
+        }).then(p => {
+            expect(p).to.be.instanceof(Person);
+            assert.notEqual(p, person);
+            assert.equal(p._id, _id);
+            assert.equal(p.name, person.name);
+            assert.equal(p.birthday.getTime(), person.birthday.getTime());
+            assert.isUndefined(p.otherProp);
+
+            assert.equal(totalUnkown, 1);
+            
+            NameOnlyPerson.prototype.onUnknownData = (key,val) => {
+                totalUnkown++;
+                lastUnkownKey = key;
+            }; // ignore unknown values from now
+            
+            return NameOnlyPerson.findOne({_id});
+        }).then(p2 => {
+            expect(p2).to.be.instanceof(NameOnlyPerson);
+            assert.notEqual(p2, person);
+            assert.equal(p2._id, _id);
+            assert.equal(p2.name, person.name);
+
+            assert.equal(totalUnkown, 2);
+            assert.equal(lastUnkownKey, 'birthday');
+            
+            assert.isUndefined(p2.birthday);
+            assert.isUndefined(p2.otherProp);
+            
+        }).then(done, done);
+        
     });
 });

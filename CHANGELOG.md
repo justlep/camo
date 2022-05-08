@@ -17,7 +17,9 @@ Breaking Changes
   no longer be auto-converted to `Date` instances before save(), but throw `ValidationError` instead.
   Only exception: the schema's `default` value (or function return value) may still be string/number
   and be auto-converted to `Date` on Document creation. 
-
+* Documents, by default, now throw an Error upon creation with data containing keys that are
+  not defined in their schema. This behavior can be customized by overriding `onUnknownData(dataKey, val)`
+  in a derived `Document`/`EmbeddedDocument` class. 
 
 ## 0.12.5 (2022-04-22)
 

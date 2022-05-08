@@ -149,6 +149,11 @@ describe('Issues', function () {
                 get fullName() {
                     return this.firstName + ' ' + this.lastName;
                 }
+
+                /** @override */
+                onUnknownData(key, val) {
+                    this[key] = val; // accept unknown keys during creation
+                }
             }
 
             let user = User.create({
