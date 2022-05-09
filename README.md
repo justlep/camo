@@ -4,10 +4,8 @@
 [![Node.js Version](https://img.shields.io/node/v/@justlep/camo.svg)]()
 
 Changes: 
-* Updated dependencies
-* Complete code refactoring & optimization (*in progress*)
-* **Breaking:** Removed mongo support altogether, leaving NeDB stuff only (for now)
-* Allows using any fork of NeDB, like [@justlep/nedb](https://github.com/justlep/nedb) instead of the original
+* Complete code refactoring & optimization
+* allows using forks of NeDB, like [@justlep/nedb](https://github.com/justlep/nedb) instead of the original
   ```javascript
   import {Datastore} from '@justlep/nedb';
   import {connect} from '@justlep/camo';
@@ -20,17 +18,53 @@ Changes:
   import Datastore from 'nedb'; 
   await connect('nedb:///path/to/dbfiles', Datastore);
   ```
-* **Breaking:** `nedb` is removed from the `optionalDependencies`. You must install the version you want manually:
+  
+**Breaking changes:**
+* Removed Mongo support for now, leaving NeDB stuff only
+* Removed `nedb` from `optionalDependencies`, must be installed manually:
   ```sh
-  # the unmaintained original NeDB v1.8.0
+  # for Node 14+/ESM (see code example above)
+  npm i --save @justlep/nedb 
+  
+  # or the original but unmaintained NeDB v1.8.0
   npm i --save nedb
-
-  # or for Node 14+ and ESM (see code example above)
-  npm i --save @justlep/nedb    
   ```
-* **Breaking:** Accessing `id` properties of `Document` or `EmbeddedDocument` no longer displays deprecation warnings, but will throw an Error.
-* **Breaking**: Passing a collection name to `new MyDocument(collectionName)` now throws an `Error` (must override `static collectionName()` instead)
-
+* Accessing `id` properties of `Document` or `EmbeddedDocument` no longer displays deprecation warnings, but will throw an Error.
+* Passing a collection name to `new MyDocument(collectionName)` now throws an `Error` (must override `static collectionName()` instead)
+* Documents now throw an Error upon creation with data containing keys that are
+  not defined in their schema. This behavior can be customized by overriding `onUnknownData(dataKey, val)`
+  in a derived `Document`/`EmbeddedDocument` class, e.g.
+  ```javascript
+  class Foo extends Document {
+    constructor() {
+        super();
+    }
+    /** @override */
+    onUnknownData(dataKey, dataVal) {
+        this[dataKey] = dataVal; // silently accept unkown keys
+    }
+  }
+  
+  let foo = Foo.create({xxx: 666}); // does not throw
+  foo.xxx === 666; // true
+  ```
+* Schema definitions within constructors (and/or by calling `instance.schema()`) are now deprecated.
+  Use a static field SCHEMA instead, e.g.
+  ```javascript
+  class Foo extends Document {
+    static SCHEMA = {
+      num: {
+        type: Number,
+        default: 123
+      }
+    }
+    constructor() {
+        super();
+    }
+  }
+  
+  Foo.create().num === 123; // true
+  ``` 
 
 # Camo
 
