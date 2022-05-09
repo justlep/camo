@@ -61,6 +61,63 @@ describe('Document', function () {
             assert.deepEqual(s[SCHEMA_ARRAY_KEYS], ['titles', 'embs']);
             assert.deepEqual(s[SCHEMA_NON_REF_EMBD_KEYS], ['titles', 'firstName', 'lastName']);
         });
+
+        it('should prefer static SCHEMA field over instance as source of truth for schema definition', function () {
+
+            class Emb extends EmbeddedDocument {
+                static SCHEMA = {
+                    foo: Number
+                };
+                
+                constructor() {
+                    super();
+                    this.foo = String; // shall be ignored
+                }
+            }
+
+            class User extends Document {
+                static SCHEMA = {
+                    titles: [String],
+                    firstName: String,
+                    lastName: String,
+                    embs: [Emb]
+                };
+                
+                constructor() {
+                    super();
+
+                    this.titles = Object;     // shall be ignored
+                    this.firstName = Boolean; // shall be ignored
+                    this.lastName = Array;    // shall be ignored
+                    this.embs = String;       // shall be ignored
+                }
+            }
+
+            let user = User.create(),
+                s = user._schema;
+
+            assert.isObject(s);
+            assert.isObject(s.titles);
+            assert.isTrue(s.titles[ST_IS_TYPED_ARRAY]);
+            assert.isTrue(s.titles.type[ST_IS_TYPED_ARRAY]);
+            assert.isUndefined(s.titles[ST_IS_EMBED_ARRAY]);
+            assert.isUndefined(s.titles.type[ST_IS_EMBED_ARRAY]);
+            assert.equal(s.titles.type.elementType, String);
+
+            assert.isObject(s.firstName);
+            assert.isObject(s.lastName);
+            assert.equal(s.firstName.type, String);
+            assert.equal(s.lastName.type, String);
+            assert.isObject(s.embs);
+            assert.isTrue(s.embs[ST_IS_EMBED_ARRAY]);
+            assert.isTrue(s.embs.type[ST_IS_EMBED_ARRAY]);
+            assert.deepEqual(s[SCHEMA_ALL_KEYS], ['titles', 'firstName', 'lastName', 'embs']);
+            assert.deepEqual(s[SCHEMA_REF_1_DOC_KEYS], []);
+            assert.deepEqual(s[SCHEMA_REF_N_DOCS_KEYS], []);
+            assert.deepEqual(s[SCHEMA_REF_1_OR_N_EMBD_KEYS], ['embs']);
+            assert.deepEqual(s[SCHEMA_ARRAY_KEYS], ['titles', 'embs']);
+            assert.deepEqual(s[SCHEMA_NON_REF_EMBD_KEYS], ['titles', 'firstName', 'lastName']);
+        });
         
         it('should require toData/fromData/validate function for custom-types', () => {
             

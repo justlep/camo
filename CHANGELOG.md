@@ -20,6 +20,8 @@ Breaking Changes
 * Documents, by default, now throw an Error upon creation with data containing keys that are
   not defined in their schema. This behavior can be customized by overriding `onUnknownData(dataKey, val)`
   in a derived `Document`/`EmbeddedDocument` class. 
+* Deprecated schema definition within constructors (and/or by calling `instance.schema()`). 
+  Preferring static field `SCHEMA` in document classes instead (#2).
 
 ## 0.12.5 (2022-04-22)
 
