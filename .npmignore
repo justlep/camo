@@ -7,3 +7,5 @@ test/
 *.tgz
 tmp4later
 test/nedbdata/
+.editorconfig
+.eslintrc
