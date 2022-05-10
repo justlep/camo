@@ -21,18 +21,16 @@ describe('Embedded', function () {
         it('should not have an _id', function (done) {
 
             class EmbeddedModel extends EmbeddedDocument {
-                constructor() {
-                    super();
-                    this.str = String;
-                }
+                static SCHEMA = {
+                    str: String
+                };
             }
 
             class DocumentModel extends Document {
-                constructor() {
-                    super();
-                    this.mod = EmbeddedModel;
-                    this.num = {type: Number};
-                }
+                static SCHEMA = {
+                    mod: EmbeddedModel,
+                    num: Number
+                };
             }
 
             let data = DocumentModel.create();
@@ -61,18 +59,16 @@ describe('Embedded', function () {
         it('should allow embedded types', function (done) {
 
             class EmbeddedModel extends EmbeddedDocument {
-                constructor() {
-                    super();
-                    this.str = String;
-                }
+                static SCHEMA = {
+                    str: String
+                };
             }
 
             class DocumentModel extends Document {
-                constructor() {
-                    super();
-                    this.mod = EmbeddedModel;
-                    this.num = {type: Number};
-                }
+                static SCHEMA = {
+                    mod: EmbeddedModel,
+                    num: Number
+                };
             }
 
             let data = DocumentModel.create();
@@ -95,18 +91,16 @@ describe('Embedded', function () {
         it('should allow array of embedded types', function (done) {
 
             class Limb extends EmbeddedDocument {
-                constructor() {
-                    super();
-                    this.type = String;
-                }
+                static SCHEMA = {
+                    type: String
+                };
             }
 
             class Person extends Document {
-                constructor() {
-                    super();
-                    this.limbs = [Limb];
-                    this.name = String;
-                }
+                static SCHEMA = {
+                    limbs: [Limb],
+                    name: String
+                };
 
                 static collectionName() {
                     return 'people';
@@ -142,25 +136,22 @@ describe('Embedded', function () {
 
         it('should save nested array of embeddeds', function (done) {
             class Point extends EmbeddedDocument {
-                constructor() {
-                    super();
-                    this.x = Number;
-                    this.y = Number;
-                }
+                static SCHEMA = {
+                    x: Number,
+                    y: Number
+                };
             }
 
             class Polygon extends EmbeddedDocument {
-                constructor() {
-                    super();
-                    this.points = [Point];
-                }
+                static SCHEMA = {
+                    points: [Point]
+                };
             }
 
             class WorldMap extends Document {
-                constructor() {
-                    super();
-                    this.polygons = [Polygon];
-                }
+                static SCHEMA = {
+                    polygons: [Polygon]
+                };
             }
 
             let map = WorldMap.create();
@@ -189,19 +180,17 @@ describe('Embedded', function () {
         it('should allow nested initialization of embedded types', function (done) {
 
             class Discount extends EmbeddedDocument {
-                constructor() {
-                    super();
-                    this.authorized = Boolean;
-                    this.amount = Number;
-                }
+                static SCHEMA = {
+                    authorized: Boolean,
+                    amount: Number
+                };
             }
 
             class Product extends Document {
-                constructor() {
-                    super();
-                    this.name = String;
-                    this.discount = Discount;
-                }
+                static SCHEMA = {
+                    name: String,
+                    discount: Discount
+                };
             }
 
             let product = Product.create({
@@ -225,19 +214,17 @@ describe('Embedded', function () {
         it('should allow initialization of array of embedded documents', function (done) {
 
             class Discount extends EmbeddedDocument {
-                constructor() {
-                    super();
-                    this.authorized = Boolean;
-                    this.amount = Number;
-                }
+                static SCHEMA = {
+                    authorized: Boolean,
+                    amount: Number
+                };
             }
 
             class Product extends Document {
-                constructor() {
-                    super();
-                    this.name = String;
-                    this.discounts = [Discount];
-                }
+                static SCHEMA = {
+                    name: String,
+                    discounts: [Discount]
+                };
             }
 
             let product = Product.create({
@@ -270,18 +257,16 @@ describe('Embedded', function () {
         it('should assign defaults to embedded types', function (done) {
 
             class EmbeddedModel extends EmbeddedDocument {
-                constructor() {
-                    super();
-                    this.str = {type: String, default: 'hello'};
-                }
+                static SCHEMA = {
+                    str: {type: String, default: 'hello'}
+                };
             }
 
             class DocumentModel extends Document {
-                constructor() {
-                    super();
-                    this.emb = EmbeddedModel;
-                    this.num = {type: Number};
-                }
+                static SCHEMA = {
+                    emb: EmbeddedModel,
+                    num: {type: Number}
+                };
             }
 
             let data = DocumentModel.create();
@@ -300,18 +285,16 @@ describe('Embedded', function () {
         it('should assign defaults to array of embedded types', function (done) {
 
             class Money extends EmbeddedDocument {
-                constructor() {
-                    super();
-                    this.value = {type: Number, default: 100};
-                }
+                static SCHEMA = {
+                    value: {type: Number, default: 100}
+                };
             }
 
             class Wallet extends Document {
-                constructor() {
-                    super();
-                    this.contents = [Money];
-                    this.owner = String;
-                }
+                static SCHEMA = {
+                    contents: [Money],
+                    owner: String
+                };
             }
 
             let wallet = Wallet.create();
@@ -338,17 +321,15 @@ describe('Embedded', function () {
         it('should validate embedded values', function (done) {
 
             class EmbeddedModel extends EmbeddedDocument {
-                constructor() {
-                    super();
-                    this.num = {type: Number, max: 10};
-                }
+                static SCHEMA = {
+                    num: {type: Number, max: 10}
+                };
             }
 
             class DocumentModel extends Document {
-                constructor() {
-                    super();
-                    this.emb = EmbeddedModel;
-                }
+                static SCHEMA = {
+                    emb: EmbeddedModel
+                };
             }
 
             let data = DocumentModel.create();
@@ -366,17 +347,18 @@ describe('Embedded', function () {
         it('should validate array of embedded values', function (done) {
 
             class Money extends EmbeddedDocument {
-                constructor() {
-                    super();
-                    this.value = {type: Number, choices: [1, 5, 10, 20, 50, 100]};
-                }
+                static SCHEMA = {
+                    value: {
+                        type: Number, 
+                        choices: [1, 5, 10, 20, 50, 100]
+                    }
+                };
             }
 
             class Wallet extends Document {
-                constructor() {
-                    super();
-                    this.contents = [Money];
-                }
+                static SCHEMA = {
+                    contents: [Money]
+                };
             }
 
             let wallet = Wallet.create();
@@ -398,13 +380,11 @@ describe('Embedded', function () {
     describe('canonicalize', function () {
         it('should ensure timestamp dates are converted to Date objects', function (done) {
             class Education extends EmbeddedDocument {
-                constructor() {
-                    super();
-
-                    this.school = String;
-                    this.major = String;
-                    this.dateGraduated = Date;
-                }
+                static SCHEMA = {
+                    school: String,
+                    major: String,
+                    dateGraduated: Date
+                };
 
                 static collectionName() {
                     return 'people';
@@ -412,11 +392,9 @@ describe('Embedded', function () {
             }
 
             class Person extends Document {
-                constructor() {
-                    super();
-
-                    this.gradSchool = Education;
-                }
+                static SCHEMA = {
+                    gradSchool: Education
+                };
 
                 static collectionName() {
                     return 'people';
@@ -458,10 +436,6 @@ describe('Embedded', function () {
             let postDeleteCalled = false;
 
             class Coffee extends EmbeddedDocument {
-                constructor() {
-                    super();
-                }
-
                 preValidate() {
                     preValidateCalled = true;
                 }
@@ -488,11 +462,9 @@ describe('Embedded', function () {
             }
 
             class Cup extends Document {
-                constructor() {
-                    super();
-
-                    this.contents = Coffee;
-                }
+                static SCHEMA = {
+                    contents: Coffee
+                };
             }
 
             let cup = Cup.create();
@@ -531,9 +503,6 @@ describe('Embedded', function () {
             let postDeleteCalled = false;
 
             class Money extends EmbeddedDocument {
-                constructor() {
-                    super();
-                }
 
                 preValidate() {
                     preValidateCalled = true;
@@ -561,11 +530,9 @@ describe('Embedded', function () {
             }
 
             class Wallet extends Document {
-                constructor() {
-                    super();
-
-                    this.contents = [Money];
-                }
+                static SCHEMA = {
+                    contents: [Money]
+                };
             }
 
             let wallet = Wallet.create();
@@ -598,26 +565,22 @@ describe('Embedded', function () {
     describe('serialize', function () {
         it('should serialize data to JSON', function (done) {
             class Address extends EmbeddedDocument {
-                constructor() {
-                    super();
-
-                    this.street = String;
-                    this.city = String;
-                    this.zipCode = Number;
-                    this.isPoBox = Boolean;
-                }
+                static SCHEMA = {
+                    street: String,
+                    city: String,
+                    zipCode: Number,
+                    isPoBox: Boolean
+                };
             }
 
             class Person extends Document {
-                constructor() {
-                    super();
-
-                    this.name = String;
-                    this.age = Number;
-                    this.isAlive = Boolean;
-                    this.children = [String];
-                    this.address = Address;
-                }
+                static SCHEMA = {
+                    name: String,
+                    age: Number,
+                    isAlive: Boolean,
+                    children: [String],
+                    address: Address
+                };
 
                 static collectionName() {
                     return 'people';
@@ -656,10 +619,9 @@ describe('Embedded', function () {
 
         it('should serialize data to JSON and ignore methods', function (done) {
             class Address extends EmbeddedDocument {
-                constructor() {
-                    super();
-                    this.street = String;
-                }
+                static SCHEMA = {
+                    street: String
+                };
 
                 getBar() {
                     return 'bar';
@@ -667,12 +629,10 @@ describe('Embedded', function () {
             }
 
             class Person extends Document {
-                constructor() {
-                    super();
-
-                    this.name = String;
-                    this.address = Address;
-                }
+                static SCHEMA = {
+                    name: String,
+                    address: Address
+                };
 
                 static collectionName() {
                     return 'people';

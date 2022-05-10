@@ -19,11 +19,10 @@ describe('Document', function () {
         it('should allow creation of instance', function (done) {
 
             class User extends Document {
-                constructor() {
-                    super();
-                    this.firstName = String;
-                    this.lastName = String;
-                }
+                static SCHEMA = {
+                    firstName: String,
+                    lastName: String
+                };
             }
 
             let user = User.create();
@@ -46,14 +45,10 @@ describe('Document', function () {
         it('should allow schema declaration via method', function (done) {
 
             class User extends Document {
-                constructor() {
-                    super();
-
-                    this.schema({
-                        firstName: String,
-                        lastName: String
-                    });
-                }
+                static SCHEMA = {
+                    firstName: String,
+                    lastName: String
+                };
             }
 
             let user = User.create();
@@ -68,12 +63,11 @@ describe('Document', function () {
         it('should allow creation of instance with data', function (done) {
 
             class User extends Document {
-                constructor() {
-                    super();
-                    this.firstName = String;
-                    this.lastName = String;
-                    this.nicknames = [String];
-                }
+                static SCHEMA = {
+                    firstName: String,
+                    lastName: String,
+                    nicknames: [String]
+                };
             }
 
             let user = User.create({
@@ -95,17 +89,15 @@ describe('Document', function () {
         it('should allow creation of instance with references', function (done) {
 
             class Coffee extends Document {
-                constructor() {
-                    super();
-                    this.temp = Number;
-                }
+                static SCHEMA = {
+                    temp: Number
+                };
             }
 
             class User extends Document {
-                constructor() {
-                    super();
-                    this.drinks = [Coffee];
-                }
+                static SCHEMA = {
+                    drinks: [Coffee]
+                };
             }
 
             let coffee = Coffee.create();
@@ -122,11 +114,10 @@ describe('Document', function () {
         it('should allow use of member variables in getters', function (done) {
 
             class User extends Document {
-                constructor() {
-                    super();
-                    this.firstName = String;
-                    this.lastName = String;
-                }
+                static SCHEMA = {
+                    firstName: String,
+                    lastName: String
+                };
 
                 get fullName() {
                     return this.firstName + ' ' + this.lastName;
@@ -146,12 +137,11 @@ describe('Document', function () {
         it('should allow use of member variables in setters', function (done) {
 
             class User extends Document {
-                constructor() {
-                    super();
-                    this.firstName = String;
-                    this.lastName = String;
-                }
-
+                static SCHEMA = {
+                    firstName: String,
+                    lastName: String
+                };
+                
                 get fullName() {
                     return this.firstName + ' ' + this.lastName;
                 }
@@ -176,12 +166,10 @@ describe('Document', function () {
         it('should allow use of member variables in methods', function (done) {
 
             class User extends Document {
-                constructor() {
-                    super();
-                    this.firstName = String;
-                    this.lastName = String;
-                }
-
+                static SCHEMA = {
+                    fistName: String,
+                    lastName: String
+                };
                 fullName() {
                     return this.firstName + ' ' + this.lastName;
                 }
@@ -200,18 +188,16 @@ describe('Document', function () {
         it('should allow schemas to be extended', function (done) {
 
             class User extends Document {
-                constructor() {
-                    super();
-                    this.firstName = String;
-                    this.lastName = String;
-                }
+                static SCHEMA = {
+                    firstName: String,
+                    lastName: String
+                };
             }
 
             class ProUser extends User {
-                constructor() {
-                    super();
-                    this.paymentMethod = String;
-                }
+                static SCHEMA = {
+                    paymentMethod: String
+                };
             }
 
             let user = ProUser.create();
@@ -219,6 +205,7 @@ describe('Document', function () {
             user.lastName = 'Bob';
             user.paymentMethod = 'cash';
 
+            // TODO this test doesn't prove anything. needs to re-fetch user, then test correct values
             user.save().then(function () {
                 validateId(user);
                 expect(user.firstName).to.be.equal('Billy');
@@ -230,23 +217,21 @@ describe('Document', function () {
         it('should allow schemas to be overridden', function (done) {
 
             class Vehicle extends Document {
-                constructor() {
-                    super();
-                    this.numWheels = {
+                static SCHEMA = {
+                    numWheels: {
                         type: Number,
                         default: 4
-                    };
-                }
+                    }
+                };
             }
 
             class Motorcycle extends Vehicle {
-                constructor() {
-                    super();
-                    this.numWheels = {
+                static SCHEMA = {
+                    numWheels: {
                         type: Number,
                         default: 2
-                    };
-                }
+                    }
+                };
             }
 
             let bike = Motorcycle.create();
@@ -259,11 +244,7 @@ describe('Document', function () {
 
         it('should provide default collection name based on class name', function (done) {
 
-            class User extends Document {
-                constructor() {
-                    super();
-                }
-            }
+            class User extends Document {}
 
             let user = User.create();
 
@@ -275,17 +256,9 @@ describe('Document', function () {
 
         it('should provide default collection name based on subclass name', function (done) {
 
-            class User extends Document {
-                constructor() {
-                    super();
-                }
-            }
+            class User extends Document {}
 
-            class ProUser extends User {
-                constructor() {
-                    super();
-                }
-            }
+            class ProUser extends User {}
 
             let pro = ProUser.create();
 
@@ -298,10 +271,6 @@ describe('Document', function () {
         it('should allow custom collection name', function (done) {
 
             class User extends Document {
-                constructor() {
-                    super();
-                }
-
                 static collectionName() {
                     return 'sheeple';
                 }
@@ -320,10 +289,9 @@ describe('Document', function () {
         it('should allow reference types', function (done) {
 
             class ReferenceeModel extends Document {
-                constructor() {
-                    super();
-                    this.str = String;
-                }
+                static SCHEMA = {
+                    str: String
+                };
 
                 static collectionName() {
                     return 'referencee1';
@@ -331,12 +299,10 @@ describe('Document', function () {
             }
 
             class ReferencerModel extends Document {
-                constructor() {
-                    super();
-                    this.ref = ReferenceeModel;
-                    this.num = {type: Number};
-                }
-
+                static SCHEMA = {
+                    ref: ReferenceeModel,
+                    num: Number
+                };
                 static collectionName() {
                     return 'referencer1';
                 }
@@ -364,10 +330,9 @@ describe('Document', function () {
         it('should allow array of references', function (done) {
 
             class ReferenceeModel extends Document {
-                constructor() {
-                    super();
-                    this.schema({str: {type: String}});
-                }
+                static SCHEMA = {
+                    str: String
+                };
 
                 static collectionName() {
                     return 'referencee2';
@@ -375,12 +340,10 @@ describe('Document', function () {
             }
 
             class ReferencerModel extends Document {
-                constructor() {
-                    super();
-                    this.refs = [ReferenceeModel];
-                    this.num = Number;
-                }
-
+                static SCHEMA = {
+                    refs: [ReferenceeModel],
+                    num: Number
+                };
                 static collectionName() {
                     return 'referencer2';
                 }
@@ -415,24 +378,20 @@ describe('Document', function () {
 
         it('should allow references to be saved using the object or its id', function (done) {
             class ReferenceeModel extends Document {
-                constructor() {
-                    super();
-                    this.str = String;
-                }
-
+                static SCHEMA = {
+                    str: String
+                };
                 static collectionName() {
                     return 'referencee3';
                 }
             }
 
             class ReferencerModel extends Document {
-                constructor() {
-                    super();
-                    this.ref1 = ReferenceeModel;
-                    this.ref2 = ReferenceeModel;
-                    this.num = {type: Number};
-                }
-
+                static SCHEMA = {
+                    ref1: ReferenceeModel,
+                    ref2: ReferenceeModel,
+                    num: Number
+                };
                 static collectionName() {
                     return 'referencer3';
                 }
@@ -467,10 +426,9 @@ describe('Document', function () {
 
         it('should allow array of references to be saved using the object or its id', function (done) {
             class ReferenceeModel extends Document {
-                constructor() {
-                    super();
-                    this.schema({str: {type: String}});
-                }
+                static SCHEMA = {
+                    str: String
+                };
 
                 static collectionName() {
                     return 'referencee4';
@@ -478,12 +436,10 @@ describe('Document', function () {
             }
 
             class ReferencerModel extends Document {
-                constructor() {
-                    super();
-                    this.refs = [ReferenceeModel];
-                    this.num = Number;
-                }
-
+                static SCHEMA = {
+                    refs: [ReferenceeModel],
+                    num: Number
+                };
                 static collectionName() {
                     return 'referencer4';
                 }
@@ -518,20 +474,17 @@ describe('Document', function () {
         it('should allow circular references', function (done) {
 
             class Employee extends Document {
-                constructor() {
-                    super();
-                    this.name = String;
-                    this.boss = Boss;
-                }
+                static SCHEMA = () => ({
+                    name: String,
+                    boss: Boss
+                });
             }
 
             class Boss extends Document {
-                constructor() {
-                    super();
-                    this.salary = Number;
-                    this.employees = [Employee];
-                }
-
+                static SCHEMA = {
+                    salary: Number,
+                    employees: [Employee]
+                };
                 static collectionName() {
                     return 'bosses';
                 }
@@ -584,10 +537,9 @@ describe('Document', function () {
         it('should allow string types', function (done) {
 
             class StringModel extends Document {
-                constructor() {
-                    super();
-                    this.schema({str: {type: String}});
-                }
+                static SCHEMA = {
+                    str: String
+                };
             }
 
             let data = StringModel.create();
@@ -602,10 +554,9 @@ describe('Document', function () {
         it('should allow number types', function (done) {
 
             class NumberModel extends Document {
-                constructor() {
-                    super();
-                    this.schema({num: {type: Number}});
-                }
+                static SCHEMA = {
+                    num: {type: Number}
+                };
 
                 static collectionName() {
                     return 'numbers1';
@@ -624,10 +575,9 @@ describe('Document', function () {
         it('should allow boolean types', function (done) {
 
             class BooleanModel extends Document {
-                constructor() {
-                    super();
-                    this.schema({bool: {type: Boolean}});
-                }
+                static SCHEMA = {
+                    bool: {type: Boolean}
+                };
             }
 
             let data = BooleanModel.create();
@@ -642,10 +592,9 @@ describe('Document', function () {
         it('should allow date types', function (done) {
 
             class DateModel extends Document {
-                constructor() {
-                    super();
-                    this.schema({date: {type: Date}});
-                }
+                static SCHEMA = {
+                    date: Date
+                };
             }
 
             let data = DateModel.create();
@@ -661,10 +610,9 @@ describe('Document', function () {
         it('should allow date type arrays', function (done) {
 
             class DateArrModel extends Document {
-                constructor() {
-                    super();
-                    this.schema({dates: {type: [Date]}});
-                }
+                static SCHEMA = {
+                    dates: {type: [Date]}
+                };
             }
 
             let data = DateArrModel.create();
@@ -683,10 +631,9 @@ describe('Document', function () {
 
             for (const typeForKey of [Object, {type: Object}, Array, []]) {
                 class ObjectModel extends Document {
-                    constructor() {
-                        super();
-                        this.schema({obj: typeForKey});
-                    }
+                    static SCHEMA = {
+                        obj: typeForKey
+                    };
                 }
 
                 expect(() => void ObjectModel.create()).to.throw('is custom-type, requiring [toData,fromData,validate]');
@@ -696,15 +643,14 @@ describe('Document', function () {
         it('should allow custom object types', function (done) {
 
             class CustomObjectModel extends Document {
-                constructor() {
-                    super();
-                    this.schema({obj: {
+                static SCHEMA = {
+                    obj: {
                         type: Object,
                         fromData: JSON.parse,
                         toData: JSON.stringify,
                         validate: (o) => o && typeof o === 'object' && o.hi === 'bye'
-                    }});
-                }
+                    }
+                };
             }
 
             let data = CustomObjectModel.create();
@@ -732,10 +678,9 @@ describe('Document', function () {
         it('should allow buffer types', function (done) {
 
             class BufferModel extends Document {
-                constructor() {
-                    super();
-                    this.schema({buf: {type: Buffer}});
-                }
+                static SCHEMA = {
+                    buf: {type: Buffer}
+                };
             }
 
             let data = BufferModel.create();
@@ -750,10 +695,9 @@ describe('Document', function () {
         it('should disallow array types with wildcard Object elements', () => {
 
             class WildcardArrayModel extends Document {
-                constructor() {
-                    super();
-                    this.schema({obj: [Object]});
-                }
+                static SCHEMA = {
+                    obj: [Object]
+                };
             }
 
             expect(() => WildcardArrayModel.create()).to.throw('is array-type with custom-type elements');
@@ -762,15 +706,14 @@ describe('Document', function () {
         it('should allow custom-type arrays', function (done) {
 
             class CustomArrayDocument extends Document {
-                constructor() {
-                    super();
-                    this.schema({arr: {
+                static SCHEMA = {
+                    arr: {
                         type: Object,
                         fromData: a => a,
                         toData: a => a,
                         validate: a => Array.isArray(a) && a.every(elem => typeof elem === 'string' || typeof elem === 'number')
-                    }});
-                }
+                    }
+                };
             }
 
             let data = CustomArrayDocument.create();
@@ -800,10 +743,9 @@ describe('Document', function () {
         it('should allow typed-array types', function (done) {
 
             class ArrayModel extends Document {
-                constructor() {
-                    super();
-                    this.schema({arr: {type: [String]}});
-                }
+                static SCHEMA = {
+                    arr: {type: [String]}
+                };
             }
 
             let data = ArrayModel.create();
@@ -821,11 +763,9 @@ describe('Document', function () {
         it('should reject objects containing values with different types', function (done) {
 
             class NumberModel extends Document {
-                constructor() {
-                    super();
-                    this.schema({num: {type: Number}});
-                }
-
+                static SCHEMA = {
+                    num: {type: Number}
+                };
                 static collectionName() {
                     return 'numbers2';
                 }
@@ -844,10 +784,9 @@ describe('Document', function () {
         it('should reject typed-arrays containing different types', function (done) {
 
             class ArrayModel extends Document {
-                constructor() {
-                    super();
-                    this.schema({arr: {type: [String]}});
-                }
+                static SCHEMA = {
+                    arr: [String]
+                };
             }
 
             let data = ArrayModel.create();
@@ -885,12 +824,10 @@ describe('Document', function () {
         it('should be undefined if unassigned and no default is given', function (done) {
 
             class Person extends Document {
-                constructor() {
-                    super();
-                    this.name = String;
-                    this.age = Number;
-                }
-
+                static SCHEMA = {
+                    name: String,
+                    age: Number
+                };
                 static collectionName() {
                     return 'people';
                 }
@@ -1014,14 +951,13 @@ describe('Document', function () {
         it('should accept value matching regex', function (done) {
 
             class Product extends Document {
-                constructor() {
-                    super();
-                    this.name = String;
-                    this.cost = {
+                static SCHEMA = {
+                    name: String,
+                    cost: {
                         type: String,
                         match: /^\$?[\d,]+(\.\d*)?$/
-                    };
-                }
+                    }
+                };
             }
 
             let product = Product.create();
@@ -1038,14 +974,13 @@ describe('Document', function () {
         it('should reject value not matching regex', function (done) {
 
             class Product extends Document {
-                constructor() {
-                    super();
-                    this.name = String;
-                    this.cost = {
+                static SCHEMA = {
+                    name: String,
+                    cost: {
                         type: String,
                         match: /^\$?[\d,]+(\.\d*)?$/
-                    };
-                }
+                    }
+                };
             }
 
             let product = Product.create();
@@ -1064,17 +999,14 @@ describe('Document', function () {
         it('should accept value that passes custom validator', function (done) {
 
             class Person extends Document {
-                constructor() {
-                    super();
-
-                    this.name = {
+                static SCHEMA = {
+                    name: {
                         type: String,
                         validate: function (value) {
                             return value.length > 4;
                         }
-                    };
-                }
-
+                    }
+                };
                 static collectionName() {
                     return 'people';
                 }
@@ -1093,17 +1025,12 @@ describe('Document', function () {
         it('should reject value that fails custom validator', function (done) {
 
             class Person extends Document {
-                constructor() {
-                    super();
-
-                    this.name = {
+                static SCHEMA = {
+                    name: {
                         type: String,
-                        validate: function (value) {
-                            return value.length > 4;
-                        }
-                    };
-                }
-
+                        validate: (value) => value.length > 4
+                    }
+                };
                 static collectionName() {
                     return 'people';
                 }
@@ -1126,12 +1053,9 @@ describe('Document', function () {
         it('should ensure timestamp dates are auto-converted to Date objects', function (done) {
 
             class Person extends Document {
-                constructor() {
-                    super();
-
-                    this.birthday = Date;
-                }
-
+                static SCHEMA = {
+                    birthday: Date
+                };
                 static collectionName() {
                     return 'people';
                 }
@@ -1152,13 +1076,11 @@ describe('Document', function () {
         it('should ensure date strings are converted to Date objects', function (done) {
 
             class Person extends Document {
-                constructor() {
-                    super();
-                    this.birthday = Date;
-                    this.graduationDate = Date;
-                    this.weddingDate = Date;
-                }
-
+                static SCHEMA = {
+                    birthday: Date,
+                    graduationDate: Date,
+                    weddingDate: Date
+                };
                 static collectionName() {
                     return 'people';
                 }
@@ -1190,10 +1112,9 @@ describe('Document', function () {
             const D = new Date();
             
             class DPerson extends Document {
-                constructor() {
-                    super();
-                    this.birthday = Date;
-                }
+                static SCHEMA = {
+                    birthday: Date
+                };
                 static collectionName() {
                     return 'people';
                 }
@@ -1234,15 +1155,12 @@ describe('Document', function () {
         it('should accept empty value that is not required', function (done) {
 
             class Person extends Document {
-                constructor() {
-                    super();
-
-                    this.name = {
+                static SCHEMA = {
+                    name: {
                         type: String,
                         required: false
-                    };
-                }
-
+                    }
+                };
                 static collectionName() {
                     return 'people';
                 }
@@ -1261,14 +1179,12 @@ describe('Document', function () {
         it('should accept value that is not undefined', function (done) {
 
             class Person extends Document {
-                constructor() {
-                    super();
-
-                    this.name = {
+                static SCHEMA = {
+                    name: {
                         type: String,
                         required: true
-                    };
-                }
+                    }
+                };
 
                 static collectionName() {
                     return 'people';
@@ -1288,16 +1204,13 @@ describe('Document', function () {
         it('should accept an empty value if default is specified', function (done) {
 
             class Person extends Document {
-                constructor() {
-                    super();
-
-                    this.name = {
+                static SCHEMA = {
+                    name: {
                         type: String,
                         required: true,
                         default: 'Scott'
-                    };
-                }
-
+                    }
+                };
                 static collectionName() {
                     return 'people';
                 }
@@ -1314,32 +1227,30 @@ describe('Document', function () {
         it('should accept boolean value', function (done) {
 
             class Person extends Document {
-                constructor() {
-                    super();
-
-                    this.isSingle = {
+                static SCHEMA = {
+                    isSingle: {
                         type: Boolean,
                         required: true
-                    };
-                    this.isMerried = {
+                    },
+                    isMarried: {
                         type: Boolean,
                         required: true
-                    };
-                }
-
+                    }
+                };
+                
                 static collectionName() {
                     return 'people';
                 }
             }
 
             let person = Person.create({
-                isMerried: true,
+                isMarried: true,
                 isSingle: false
             });
 
             person.save().then(function () {
                 validateId(person);
-                expect(person.isMerried).to.be.true;
+                expect(person.isMarried).to.be.true;
                 expect(person.isSingle).to.be.false;
             }).then(done, done);
         });
@@ -1347,15 +1258,12 @@ describe('Document', function () {
         it('should accept date value', function (done) {
 
             class Person extends Document {
-                constructor() {
-                    super();
-
-                    this.birthDate = {
+                static SCHEMA = {
+                    birthDate: {
                         type: Date,
                         required: true
-                    };
-                }
-
+                    }
+                };
                 static collectionName() {
                     return 'people';
                 }
@@ -1376,18 +1284,16 @@ describe('Document', function () {
         it('should accept any number value', function (done) {
 
             class Person extends Document {
-                constructor() {
-                    super();
-
-                    this.age = {
+                static SCHEMA = {
+                    age: {
                         type: Number,
                         required: true
-                    };
-                    this.level = {
+                    },
+                    level: {
                         type: Number,
                         required: true
-                    };
-                }
+                    }
+                };
 
                 static collectionName() {
                     return 'people';
@@ -1409,15 +1315,12 @@ describe('Document', function () {
         it('should reject value that is undefined', function (done) {
 
             class Person extends Document {
-                constructor() {
-                    super();
-
-                    this.name = {
+                static SCHEMA = {
+                    name: {
                         type: String,
                         required: true
-                    };
-                }
-
+                    }
+                };
                 static collectionName() {
                     return 'people';
                 }
@@ -1435,16 +1338,13 @@ describe('Document', function () {
         it('should reject value if specified default empty value', function (done) {
 
             class Person extends Document {
-                constructor() {
-                    super();
-
-                    this.name = {
+                static SCHEMA = {
+                    name: {
                         type: String,
                         required: true,
                         default: ''
-                    };
-                }
-
+                    }
+                };
                 static collectionName() {
                     return 'people';
                 }
@@ -1462,17 +1362,15 @@ describe('Document', function () {
         it('should reject value that is null', function (done) {
 
             class Person extends Document {
-                constructor() {
-                    super();
-
-                    this.name = {
+                static SCHEMA = {
+                    name: {
                         type: Object,
                         toData: x => x,
                         fromData: x => x,
                         validate: () => true,
                         required: true
-                    };
-                }
+                    }
+                };
 
                 static collectionName() {
                     return 'people';
@@ -1493,17 +1391,15 @@ describe('Document', function () {
         it('should reject value that is an empty array', function (done) {
 
             class Person extends Document {
-                constructor() {
-                    super();
-
-                    this.names = {
+                static SCHEMA = {
+                    names: {
                         type: Array,
                         toData: x => x,
                         fromData: x => x,
                         validate: () => true, // 'required'-check is run first, so validate() never gets called during this test
                         required: true
-                    };
-                }
+                    }
+                };
 
                 static collectionName() {
                     return 'people';
@@ -1524,14 +1420,12 @@ describe('Document', function () {
         it('should reject value that is an empty string', function (done) {
 
             class Person extends Document {
-                constructor() {
-                    super();
-
-                    this.name = {
+                static SCHEMA = {
+                    name: {
                         type: String,
                         required: true
-                    };
-                }
+                    }
+                };
 
                 static collectionName() {
                     return 'people';
@@ -1552,17 +1446,15 @@ describe('Document', function () {
         it('should reject value that is an empty object', function (done) {
 
             class Person extends Document {
-                constructor() {
-                    super();
-
-                    this.names = {
+                static SCHEMA = {
+                    names: {
                         type: Object,
                         fromData: x => x,
                         toData: x => x,
                         validate: () => true, // is run AFTER required-check, so is never called in this test
                         required: true
-                    };
-                }
+                    }
+                };
 
                 static collectionName() {
                     return 'people';
@@ -1593,9 +1485,6 @@ describe('Document', function () {
             let postDeleteCalled = false;
 
             class Person extends Document {
-                constructor() {
-                    super();
-                }
 
                 static collectionName() {
                     return 'people';
@@ -1654,19 +1543,16 @@ describe('Document', function () {
     describe('serialize', function () {
         it('should serialize data to JSON', function (done) {
             class Person extends Document {
-                constructor() {
-                    super();
-
-                    this.name = String;
-                    this.age = Number;
-                    this.isAlive = Boolean;
-                    this.children = [String];
-                    this.spouse = {
+                static SCHEMA = {
+                    name: String,
+                    age: Number,
+                    isAlive: Boolean,
+                    children: [String],
+                    spouse: {
                         type: String,
                         default: null
-                    };
-                }
-
+                    }
+                };
                 static collectionName() {
                     return 'people';
                 }
@@ -1701,17 +1587,14 @@ describe('Document', function () {
 
         it('should serialize data to JSON', function (done) {
             class Person extends Document {
-                constructor() {
-                    super();
-
-                    this.name = String;
-                    this.children = [Person];
-                    this.spouse = {
+                static SCHEMA = {
+                    name: String,
+                    children: [Person],
+                    spouse: {
                         type: Person,
                         default: null
-                    };
-                }
-
+                    }
+                };
                 static collectionName() {
                     return 'people';
                 }
@@ -1773,11 +1656,9 @@ describe('Document', function () {
 
         it('should serialize data to JSON and ignore methods', function (done) {
             class Person extends Document {
-                constructor() {
-                    super();
-
-                    this.name = String;
-                }
+                static SCHEMA = {
+                    name: String
+                };
 
                 static collectionName() {
                     return 'people';
@@ -1796,10 +1677,9 @@ describe('Document', function () {
     
     it('should by default throw on unknown data keys during creation', () => {
         class Foo extends Document {
-            constructor() {
-                super();
-                this.name = String;
-            }
+            static SCHEMA = {
+                name: String
+            };
         }
         
         expect(() => Foo.create({name: 'Tom'})).not.to.throw();
@@ -1810,10 +1690,9 @@ describe('Document', function () {
         let totalUnkownKeys = 0;
         
         class Foo extends Document {
-            constructor() {
-                super();
-                this.name = String;
-            }
+            static SCHEMA = {
+                name: String
+            };
             /** @override */
             onUnknownData(dataKey, dataVal) {
                 this[dataKey] = dataVal;
@@ -1845,10 +1724,9 @@ describe('Document', function () {
         let totalUnkownKeys = 0;
 
         class Foo extends Document {
-            constructor() {
-                super();
-                this.name = String;
-            }
+            static SCHEMA = {
+                name: String
+            };
             /** @override */
             onUnknownData(dataKey, dataVal) {
                 totalUnkownKeys++; // just count, but discard key/value
@@ -1878,10 +1756,9 @@ describe('Document', function () {
             lastUnkownKey;
         
         class NameOnlyPerson extends Document {
-            constructor() {
-                super();
-                this.name = String;
-            }
+            static SCHEMA = {
+                name: String
+            };
             static collectionName() {
                 return COMMON_COLLECTION_NAME;
             }
@@ -1894,11 +1771,10 @@ describe('Document', function () {
         }
         
         class Person extends NameOnlyPerson {
-            constructor() {
-                super();
-                this.name = String;
-                this.birthday = Date;
-            }
+            static SCHEMA = {
+                name: String,
+                birthday: Date
+            };
             static collectionName() {
                 return COMMON_COLLECTION_NAME;
             }

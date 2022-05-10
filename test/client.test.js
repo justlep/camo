@@ -21,13 +21,11 @@ describe('Client', function () {
     });
 
     class Address extends Document {
-        constructor() {
-            super();
-
-            this.street = String;
-            this.city = String;
-            this.zipCode = Number;
-        }
+        static SCHEMA = {
+            street: String,
+            city: String,
+            zipCode: Number
+        };
 
         static collectionName() {
             return 'addresses';
@@ -35,27 +33,19 @@ describe('Client', function () {
     }
 
     class Pet extends Document {
-        constructor() {
-            super();
-
-            this.schema({
-                type: String,
-                name: String
-            });
-        }
+        static SCHEMA = {
+            type: String,
+            name: String
+        };
     }
 
     class User extends Document {
-        constructor() {
-            super();
-
-            this.schema({
-                firstName: String,
-                lastName: String,
-                pet: Pet,
-                address: Address
-            });
-        }
+        static SCHEMA = {
+            firstName: String,
+            lastName: String,
+            pet: Pet,
+            address: Address
+        };
     }
 
     describe('#findOne()', function () {
@@ -221,13 +211,10 @@ describe('Client', function () {
 
     describe('#find()', function () {
         class City extends Document {
-            constructor() {
-                super();
-
-                this.name = String;
-                this.population = Number;
-            }
-
+            static SCHEMA = {
+                name: String,
+                population: Number
+            };
             static collectionName() {
                 return 'cities';
             }

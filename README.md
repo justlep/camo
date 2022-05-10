@@ -36,9 +36,6 @@ Changes:
   in a derived `Document`/`EmbeddedDocument` class, e.g.
   ```javascript
   class Foo extends Document {
-    constructor() {
-        super();
-    }
     /** @override */
     onUnknownData(dataKey, dataVal) {
         this[dataKey] = dataVal; // silently accept unkown keys
@@ -58,14 +55,19 @@ Changes:
         default: 123
       }
     }
-    constructor() {
-        super();
-    }
   }
   
   Foo.create().num === 123; // true
   ``` 
+  Alternatively, `SCHEMA` can also be a no-args function returning the schema object (useful e.g. for circular type references):
+  ```javascript
+  class Foo extends Document {
+    static SCHEMA = () => ({bar: Bar});
+  }
 
+  class Bar extends Document {
+    static SCHEMA = {foo: Foo};
+  }
 # Camo
 
 **Camo needs your help!** Interested in contributing? [Let me know](mailto:s.w.robinson+camo@gmail.com)!

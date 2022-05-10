@@ -24,17 +24,15 @@ describe('Issues', function () {
              */
 
             class Eye extends Document {
-                constructor() {
-                    super();
-                    this.color = String;
-                }
+                static SCHEMA = {
+                    color: String
+                };
             }
 
             class User extends Document {
-                constructor() {
-                    super();
-                    this.eyes = [Eye];
-                }
+                static SCHEMA = {
+                    eyes: [Eye]
+                };
             }
 
             let user1 = User.create();
@@ -88,17 +86,15 @@ describe('Issues', function () {
              */
 
             class Eye extends Document {
-                constructor() {
-                    super();
-                    this.color = String;
-                }
+                static SCHEMA = {
+                    color: String
+                };
             }
 
             class User extends Document {
-                constructor() {
-                    super();
-                    this.eyes = [Eye];
-                }
+                static SCHEMA = {
+                    eyes: [Eye]
+                };
             }
 
             let user = User.create();
@@ -134,11 +130,10 @@ describe('Issues', function () {
              */
 
             class User extends Document {
-                constructor() {
-                    super();
-                    this.firstName = String;
-                    this.lastName = String;
-                }
+                static SCHEMA = {
+                    firstName: String,
+                    lastName: String
+                };
 
                 set fullName(name) {
                     let split = name.split(' ');
@@ -179,10 +174,9 @@ describe('Issues', function () {
              */
 
             class User extends Document {
-                constructor() {
-                    super();
-                    this.name = String;
-                }
+                static SCHEMA = {
+                    name: String
+                };
             }
 
             let user = User.create({
@@ -217,16 +211,14 @@ describe('Issues', function () {
          */
         it('should save changes made in postValidate hook', function (done) {
             class Person extends Document {
-                constructor() {
-                    super();
-
-                    this.postValidateChange = {
+                static SCHEMA = () => ({
+                    postValidateChange: {
                         type: Boolean,
                         default: false
-                    };
-                    this.pet = Pet;
-                    this.pets = [Pet];
-                }
+                    },
+                    pet: Pet,
+                    pets: [Pet]
+                });
 
                 static collectionName() {
                     return 'people';
@@ -244,11 +236,9 @@ describe('Issues', function () {
             }
 
             class Pet extends EmbeddedDocument {
-                constructor() {
-                    super();
-
-                    this.postValidateChange = Boolean;
-                }
+                static SCHEMA = {
+                    postValidateChange: Boolean
+                };
 
                 static collectionName() {
                     return 'pets';
@@ -274,16 +264,14 @@ describe('Issues', function () {
 
         it('should save changes made in preSave hook', function (done) {
             class Person extends Document {
-                constructor() {
-                    super();
-
-                    this.preSaveChange = {
+                static SCHEMA = () => ({
+                    preSaveChange: {
                         type: Boolean,
                         default: false
-                    };
-                    this.pet = Pet;
-                    this.pets = [Pet];
-                }
+                    },
+                    pet: Pet,
+                    pets: [Pet]
+                });
 
                 static collectionName() {
                     return 'people';
@@ -301,11 +289,9 @@ describe('Issues', function () {
             }
 
             class Pet extends EmbeddedDocument {
-                constructor() {
-                    super();
-
-                    this.preSaveChange = Boolean;
-                }
+                static SCHEMA = {
+                    preSaveChange: Boolean
+                };
 
                 static collectionName() {
                     return 'pets';
@@ -330,46 +316,6 @@ describe('Issues', function () {
         });
     });
 
-    /**
-     * Obsolete since wildcard arrays are now forbidden
-     */
-    xdescribe('#53', function () {
-        /* 
-         * Camo should validate that all properties conform to
-         * the type they were given in the schema. However,
-         * array types are not properly validated due to not
-         * properly checking for 'type === Array' and 
-         * 'type === []' in validator code.
-         */
-
-        it('should validate Array types properly', function (done) {
-            class Foo extends Document {
-                constructor() {
-                    super();
-
-                    this.bar = Array;
-                }
-            }
-
-            let foo = Foo.create({bar: [1, 2, 3]});
-
-            foo.save().then(function (f) {
-                expect(f.bar).to.have.length(3);
-                expect(f.bar).to.include(1);
-                expect(f.bar).to.include(2);
-                expect(f.bar).to.include(3);
-
-                foo.bar = 1;
-                return foo.save();
-            }).then(function (f) {
-                expect.fail(null, Error, 'Expected error, but got none.');
-            }).catch(function (error) {
-                expect(error).to.be.instanceof(ValidationError);
-            }).then(done, done);
-        });
-
-    });
-
     describe('#55', function () {
         it('should return updated data on findOneAndUpdate when updating nested data', function (done) {
             /* 
@@ -385,20 +331,17 @@ describe('Issues', function () {
              */
 
             class Contact extends EmbeddedDocument {
-                constructor() {
-                    super();
-
-                    this.email = String;
-                    this.phone = String;
-                }
+                static SCHEMA = {
+                    email: String,
+                    phone: String
+                };
             }
 
             class Person extends Document {
-                constructor() {
-                    super();
-                    this.name = String;
-                    this.contact = Contact;
-                }
+                static SCHEMA = {
+                    name: String,
+                    contact: Contact
+                };
             }
 
             let person = Person.create({
@@ -430,11 +373,9 @@ describe('Issues', function () {
              */
 
             class Foo extends Document {
-                constructor() {
-                    super();
-
-                    this.bar = String;
-                }
+                static SCHEMA = {
+                    bar: String
+                };
 
                 preValidate() {
                     return Promise.reject('DO NOT SAVE');

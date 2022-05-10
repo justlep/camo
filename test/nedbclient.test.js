@@ -66,11 +66,9 @@ describe('NeDbClient', function() {
     describe('id', function() {
         it('should allow custom _id values', function(done) {
             class School extends Document {
-                constructor() {
-                    super();
-
-                    this.name = String;
-                }
+                static SCHEMA = {
+                    name: String
+                };
             }
 
             let school = School.create();
@@ -91,17 +89,13 @@ describe('NeDbClient', function() {
     describe('indexes', function() {
         it('should reject documents with duplicate values in unique-indexed fields', function(done) {
             class User extends Document {
-                constructor() {
-                    super();
-
-                    this.schema({
-                        name: String,
-                        email: {
-                            type: String,
-                            unique: true
-                        }
-                    });
-                }
+                static SCHEMA = {
+                    name: String,
+                    email: {
+                        type: String,
+                        unique: true
+                    }
+                };
             }
 
             let user1 = User.create();
@@ -121,17 +115,13 @@ describe('NeDbClient', function() {
 
         it('should accept documents with duplicate values in non-unique-indexed fields', function(done) {
             class User extends Document {
-                constructor() {
-                    super();
-
-                    this.schema({
-                        name: String,
-                        email: {
-                            type: String,
-                            unique: false
-                        }
-                    });
-                }
+                static SCHEMA = {
+                    name: String,
+                    email: {
+                        type: String,
+                        unique: false
+                    }
+                };
             }
 
             let user1 = User.create();

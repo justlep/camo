@@ -19,21 +19,18 @@ describe('Document', function () {
         it('should work for basic types', function () {
 
             class Emb extends EmbeddedDocument {
-                constructor() {
-                    super();
-                    this.foo = Number;
-                }
+                static SCHEMA = {
+                    foo: Number
+                };
             }
             
             class User extends Document {
-                constructor() {
-                    super();
-                    
-                    this.titles = [String];
-                    this.firstName = String;
-                    this.lastName = String;
-                    this.embs = [Emb];
-                }
+                static SCHEMA = {
+                    titles: [String],
+                    firstName: String,
+                    lastName: String,
+                    embs: [Emb]
+                };
             }
 
             let user = User.create(),
@@ -93,7 +90,7 @@ describe('Document', function () {
                 }
             }
 
-            let user = User.create(),
+            let user = User.create({lastName: 'huhu'}),
                 s = user._schema;
 
             assert.isObject(s);
@@ -117,16 +114,20 @@ describe('Document', function () {
             assert.deepEqual(s[SCHEMA_REF_1_OR_N_EMBD_KEYS], ['embs']);
             assert.deepEqual(s[SCHEMA_ARRAY_KEYS], ['titles', 'embs']);
             assert.deepEqual(s[SCHEMA_NON_REF_EMBD_KEYS], ['titles', 'firstName', 'lastName']);
+            
+            assert.equal(user.firstName, undefined);
+            assert.deepEqual(user.titles, []);
+            assert.deepEqual(user.embs, []);
+            assert.equal(user.lastName, 'huhu');
         });
         
         it('should require toData/fromData/validate function for custom-types', () => {
             
             function makeClassAndExpectErrorOnInstantiate(customPropName, customPropVal, matchErr) {
                 class CustomClass extends Document {
-                    constructor() {
-                        super();
-                        this[customPropName] = customPropVal;
-                    }
+                    static SCHEMA = {
+                        [customPropName]: customPropVal
+                    };
                 }
                 expect(() => CustomClass.create()).to.throw(matchErr || new RegExp(`${customPropName}.+requiring \\[toData,fromData,validate]`));
             }
@@ -142,17 +143,15 @@ describe('Document', function () {
         
         it('should work with custom types', () => {
             class A extends Document {
-                constructor() {
-                    super();
-                    this.foo = {
+                static SCHEMA = {
+                    foo: {
                         type: Object,
                         toData: o => o,
                         fromData: o => o,
                         validate: () => true
-                    };
-                    
-                    this.bar = String;
-                }
+                    },
+                    bar: String
+                };
             }
             let a;
             expect(() => a = A.create()).not.to.throw();
