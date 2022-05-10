@@ -43,8 +43,7 @@
   },
   "license": "MIT",
   "dependencies": {
-    "depd": "^2.0.0",
-    "lodash": "^4.17.15"
+    "depd": "^2.0.0"
   },
   "devDependencies": {
     "chai": "^4.3.6",
