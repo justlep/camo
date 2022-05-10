@@ -128,11 +128,14 @@ describe('Document', function () {
             user.firstName = 'Billy';
             user.lastName = 'Bob';
 
-            user.save().then(function () {
-                validateId(user);
-                expect(user.fullName).to.be.equal('Billy Bob');
-            }).then(done, done);
-        });
+            user.save()
+                .then(() => User.findOne({_id: user._id}))
+                .then(u => {
+                    validateId(u);
+                    expect(u.fullName).to.be.equal('Billy Bob');
+                    expect(user.fullName).to.be.equal('Billy Bob');
+                }).then(done, done);
+            });
 
         it('should allow use of member variables in setters', function (done) {
 
@@ -155,19 +158,23 @@ describe('Document', function () {
 
             let user = User.create();
             user.fullName = 'Billy Bob';
-
-            user.save().then(function () {
-                validateId(user);
-                expect(user.firstName).to.be.equal('Billy');
-                expect(user.lastName).to.be.equal('Bob');
-            }).then(done, done);
+            
+            user.save()
+                .then(() => User.findOne({_id: user._id}))
+                .then(u => {
+                    validateId(u);
+                    expect(u.firstName).to.be.equal('Billy');
+                    expect(u.lastName).to.be.equal('Bob');
+                    expect(user.firstName).to.be.equal('Billy');
+                    expect(user.lastName).to.be.equal('Bob');
+                }).then(done, done);
         });
 
         it('should allow use of member variables in methods', function (done) {
 
             class User extends Document {
                 static SCHEMA = {
-                    fistName: String,
+                    firstName: String,
                     lastName: String
                 };
                 fullName() {
@@ -178,11 +185,14 @@ describe('Document', function () {
             let user = User.create();
             user.firstName = 'Billy';
             user.lastName = 'Bob';
+            expect(user.fullName()).to.be.equal('Billy Bob');
 
-            user.save().then(function () {
-                validateId(user);
-                expect(user.fullName()).to.be.equal('Billy Bob');
-            }).then(done, done);
+            user.save()
+                .then(() => User.findOne({_id: user._id}))
+                .then(u => {
+                    validateId(u);
+                    expect(u.fullName()).to.be.equal('Billy Bob');
+                }).then(done, done);
         });
 
         it('should allow schemas to be extended', function (done) {
@@ -205,13 +215,14 @@ describe('Document', function () {
             user.lastName = 'Bob';
             user.paymentMethod = 'cash';
 
-            // TODO this test doesn't prove anything. needs to re-fetch user, then test correct values
-            user.save().then(function () {
-                validateId(user);
-                expect(user.firstName).to.be.equal('Billy');
-                expect(user.lastName).to.be.equal('Bob');
-                expect(user.paymentMethod).to.be.equal('cash');
-            }).then(done, done);
+            user.save()
+                .then(() => ProUser.findOne({_id: user._id}))
+                .then(p => {
+                    validateId(user);
+                    expect(p.firstName).to.be.equal('Billy');
+                    expect(p.lastName).to.be.equal('Bob');
+                    expect(p.paymentMethod).to.be.equal('cash');
+                }).then(done, done);
         });
 
         it('should allow schemas to be overridden', function (done) {
@@ -236,12 +247,47 @@ describe('Document', function () {
 
             let bike = Motorcycle.create();
 
-            bike.save().then(function () {
-                validateId(bike);
-                expect(bike.numWheels).to.be.equal(2);
-            }).then(done, done);
+            bike.save()
+                .then(() => Motorcycle.findOne({_id: bike._id}))
+                .then(b => {
+                    validateId(b);
+                    expect(b.numWheels).to.be.equal(2);
+                }).then(done, done);
         });
 
+        it('should not use the parent static SCHEMA in derived class w/ schema-init by constructor', function () {
+
+            class Vehicle extends Document {
+                static SCHEMA = {
+                    name: {
+                        type: String,
+                        default: 'nice vehicle'
+                    }
+                };
+            }
+
+            class Motorcycle extends Vehicle {
+                constructor() {
+                    super();
+                    this.name = {
+                        type: String,
+                        default: 'even nicer motorcycle'
+                    };
+                    this.doors = {
+                        type: Number,
+                        default: 0
+                    };
+                }
+            }
+
+            let bike = Motorcycle.create();
+            assert.equal(bike.name, 'even nicer motorcycle');
+            assert.equal(bike.doors, 0);
+            
+            assert.equal(Vehicle.create().name, 'nice vehicle');
+            assert.isUndefined(Vehicle.create().doors);
+        });
+        
         it('should provide default collection name based on class name', function (done) {
 
             class User extends Document {}

@@ -93,6 +93,8 @@ describe('Document', function () {
             let user = User.create({lastName: 'huhu'}),
                 s = user._schema;
 
+            user.embs.push(Emb.create({foo: 123}));
+            
             assert.isObject(s);
             assert.isObject(s.titles);
             assert.isTrue(s.titles[ST_IS_TYPED_ARRAY]);
@@ -117,7 +119,7 @@ describe('Document', function () {
             
             assert.equal(user.firstName, undefined);
             assert.deepEqual(user.titles, []);
-            assert.deepEqual(user.embs, []);
+            assert.deepEqual(user.embs[0].foo, 123);
             assert.equal(user.lastName, 'huhu');
         });
         
