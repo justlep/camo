@@ -39,7 +39,7 @@ export function initMochaHooksForNedb() {
         .then(Datastore => connect(nedbConnectUrl, Datastore))
         .then(db => {_database = db; done();}, done));
     
-    afterEach(done => void _database.dropDatabase().then(() => done(), done));
+    afterEach(done => void _database._dropDatabase().then(() => done(), done));
 }
 
 // const MONGO_URL = 'mongodb://localhost/camo_test'

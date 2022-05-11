@@ -300,7 +300,7 @@ describe('Document', function () {
             done();
         });
 
-        it('should provide default collection name based on subclass name', function (done) {
+        it('should provide default collection name based on subclass name', function () {
 
             class User extends Document {}
 
@@ -310,11 +310,23 @@ describe('Document', function () {
 
             expect(pro.collectionName()).to.be.equal('prousers');
             expect(ProUser.collectionName()).to.be.equal('prousers');
-
-            done();
         });
 
-        it('should allow custom collection name', function (done) {
+        it('should not inherit collection names of parent classes', function () {
+
+            class User extends Document {}
+            class ProUser extends User {}
+
+            let user = User.create(),
+                pro = ProUser.create();
+
+            expect(user.collectionName()).to.be.equal('users');
+            expect(User.collectionName()).to.be.equal('users');
+            expect(pro.collectionName()).to.be.equal('prousers');
+            expect(ProUser.collectionName()).to.be.equal('prousers');
+        });
+        
+        it('should allow custom collection name', function () {
 
             class User extends Document {
                 static collectionName() {
@@ -323,11 +335,57 @@ describe('Document', function () {
             }
 
             let user = User.create();
-
             expect(user.collectionName()).to.be.equal('sheeple');
             expect(User.collectionName()).to.be.equal('sheeple');
+        });
+        
+        it('should allow custom collection name in derived classes', function (done) {
 
-            done();
+            class UserWithUnique extends Document {
+                static SCHEMA = {
+                    name: {
+                        type: String,
+                        unique: true
+                    },
+                    foo: {
+                        type: Number,
+                        unique: true
+                    }
+                };
+            }
+
+            class ProUser extends UserWithUnique {
+                static collectionName() {
+                    return 'prousersx';
+                }
+            }
+            
+            let proUser = ProUser.create();
+
+            expect(proUser.collectionName()).to.be.equal('prousersx');
+            expect(ProUser.collectionName()).to.be.equal('prousersx');
+
+            /** saving just to avoid erratic behavior in afterEach cleanup; see comment in {@link NeDbClient._dropDatabase} */
+            proUser.save().then(() => done(), done); 
+        });
+
+        it('should inherit custom collection names', function () {
+
+            class User extends Document {
+                static collectionName() {
+                    return 'users';
+                }
+            }
+            
+            class ProUser extends User {}
+
+            let proUser = ProUser.create(),
+                user = User.create();
+            
+            expect(user.collectionName()).to.be.equal('users');
+            expect(User.collectionName()).to.be.equal('users');
+            expect(proUser.collectionName()).to.be.equal('users');
+            expect(proUser.collectionName()).to.be.equal('users');
         });
     });
 
@@ -861,7 +919,7 @@ describe('Document', function () {
 
             let data = Data.create();
 
-            data.save().then(() => new Promise(resolve => setTimeout(resolve, 1))).then(function () {
+            data.save().then(() => new Promise(resolve => setTimeout(resolve, 5))).then(function () {
                 validateId(data);
                 expect(data.date).to.be.lessThan(new Date());
             }).then(done, done);
