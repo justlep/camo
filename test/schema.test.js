@@ -11,7 +11,7 @@ import {
     SCHEMA_REF_1_OR_N_EMBD_KEYS, SCHEMA_REF_N_DOCS_KEYS
 } from '../lib/symbols.js';
 
-describe('Document', function () {
+describe('Schema', function () {
 
     initMochaHooksForNedb();
 
