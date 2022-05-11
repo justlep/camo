@@ -168,5 +168,74 @@ describe('Document', function () {
             assert.deepEqual(s[SCHEMA_ARRAY_KEYS], []);
             assert.deepEqual(s[SCHEMA_NON_REF_EMBD_KEYS], ['foo', 'bar']);
         });
+        
+        it('should ensure default arrays are always generated and never reused', () => {
+            const OBJ1 = {};
+            const OBJ2 = {};
+            
+            class Foo extends Document {
+                static SCHEMA = {
+                    names: {
+                        type: [String],
+                        default: ['Tom']
+                    },
+                    objs: {
+                        type: Array,
+                        fromData: o => o,
+                        toData: o => o,
+                        validate: () => true,
+                        default: []
+                    },
+                    otherObjs: {
+                        type: Array,
+                        fromData: o => o,
+                        toData: o => o,
+                        validate: () => true
+                        // implicit [] default 
+                    },
+                    moreObjs: {
+                        type: Array,
+                        fromData: o => o,
+                        toData: o => o,
+                        validate: () => true,
+                        default: [OBJ1] 
+                    },
+                    nums: {
+                        type: [Number]
+                    },
+                    weird: {
+                        type: [String],
+                        default: 'foo'
+                    }
+                };
+            }
+            
+            let a = Foo.create();
+            assert.equal(a.names.length, 1);
+            assert.equal(a.names[0], 'Tom');
+            assert.equal(a.objs.length, 0);            
+            assert.equal(a.otherObjs.length, 0);            
+            assert.equal(a.moreObjs.length, 1);            
+            assert.equal(a.moreObjs[0], OBJ1);            
+            assert.isArray(a.nums);
+            assert.equal(a.nums.length, 0);
+            
+            a.names.push('Bob');
+            a.objs.push({abc: 123});
+            a.nums.push(789);
+            a.otherObjs.push(OBJ1);
+            a.moreObjs.push(OBJ2);
+            
+            let b = Foo.create();
+            assert.equal(b.names.length, 1);
+            assert.equal(b.names[0], 'Tom');
+            assert.equal(b.objs.length, 0);
+            assert.isArray(b.nums);
+            assert.equal(b.nums.length, 0);
+            assert.equal(b.weird, 'foo');
+            assert.equal(b.otherObjs.length, 0);
+            assert.equal(b.moreObjs.length, 1); // OBJ2 is not here 
+            assert.equal(b.moreObjs[0], OBJ1);
+        });
     });
 });
