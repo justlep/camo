@@ -5,7 +5,7 @@
         "es6": true
     },
     "parserOptions": {
-        "ecmaVersion": "latest",
+        "ecmaVersion": "2022",
         "ecmaFeatures": {
             "templateStrings": true
         },
