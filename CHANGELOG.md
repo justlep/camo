@@ -1,11 +1,17 @@
 
-## 1.0.0 (tba)
+## 1.0.0 (2022-05-12)
 
-- ...
+Changes:
+* refactored/rewritten pretty much everything
+* much stricter schemas
+* much more CPU friendly
+* removed lodash, only 1 dependency left (`depd`)
 
-Breaking Changes
-- Signature of `connect` is now `connect(nedbUrl, DatastoreClass)`.  
-- Accessing `id` properties of `Document` or `EmbeddedDocument` no longer displays deprecation warnings, but will throw an Error. 
+Breaking Changes:
+* requires Node 14+
+* Removed Mongo support (for now)
+* Signature of `connect` is now `connect(nedbUrl, DatastoreClass)`.  
+* Accessing `id` properties of `Document` or `EmbeddedDocument` no longer displays deprecation warnings, but will throw an Error. 
 * Passing a collection name to `new MyDocument(collectionName)` now throws an `Error` (must override `static collectionName()` instead)
 * Removed deprecated `Document.loadOne()`, `loadOneAndUpdate()`, `loadOneAndDelete()`, `loadMany()`
 * `null` values for properties marked `required` will throw during validation, too
@@ -17,13 +23,14 @@ Breaking Changes
   no longer be auto-converted to `Date` instances before save(), but throw `ValidationError` instead.
   Only exception: the schema's `default` value (or function return value) may still be string/number
   and be auto-converted to `Date` on Document creation. 
-* Documents, by default, now throw an Error upon creation with data containing keys that are
-  not defined in their schema. This behavior can be customized by overriding `onUnknownData(dataKey, val)`
-  in a derived `Document`/`EmbeddedDocument` class. 
+* Documents now throw by default if created with data containing keys which are
+  not defined in the schema. This behavior can be customized either globally globally via `setUnknownDataKeyBehavior()`,
+  or by overriding `onUnknownData(dataKey, val)` in a derived `Document`/`EmbeddedDocument` class
 * Deprecated schema definition within constructors (and/or by calling `instance.schema()`). 
   Preferring static field `SCHEMA` in document classes instead (#2).
 * Renamed `Client.dropDatabase` to `Client._dropDatabase`, marked it "internal" (for testing purposes only)
-  since there is no clean way of safely deleting entire persistent NeDB collections in the filesystem.    
+  since there is no clean way of safely deleting entire persistent NeDB collections in the filesystem.  
+ 
 
 ## 0.12.5 (2022-04-22)
 

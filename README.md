@@ -33,7 +33,7 @@ Changes:
 * Passing a collection name to `new MyDocument(collectionName)` now throws an `Error` (must override `static collectionName()` instead)
 * Documents now throw errors when created with data objects containing keys that are
   not present in the schema. This behavior can be <a href="#behavior-on-unknown-data-keys">customized</a>. 
-* Schema definitions within constructors (and/or by calling `instance.schema()`) are now deprecated.
+* Schema definition by constructor (or `instance.schema()`) is deprecated.
   Use a static field SCHEMA instead, e.g.
   ```javascript
   class Foo extends Document {
@@ -47,16 +47,7 @@ Changes:
   
   Foo.create().num === 123; // true
   ``` 
-  Alternatively, `SCHEMA` can also be a no-args function returning the schema object (useful e.g. for circular type references):
-  ```javascript
-  class Foo extends Document {
-    static SCHEMA = () => ({bar: Bar});
-  }
-
-  class Bar extends Document {
-    static SCHEMA = {foo: Foo};
-  }
-  ```
+  More info below at <a href="#declaring-your-document">Declaring Your Document</a>
 * `Client._dropDatabase()` is now private/internal (see CHANGELOG)
 
 # Camo
@@ -104,11 +95,11 @@ To use Camo, you must first have installed **Node >=14**, then run the following
 
 And at least ONE of the following:
 
-    npm install nedb --save
+    npm install @justlep/nedb --save
 
     OR
 
-    npm install @justlep/nedb --save
+    npm install nedb --save
 
 <!-- 
    (mongo-support dropped for now..)  
