@@ -392,8 +392,8 @@ setUnknownDataKeyBehavior('default'); // switch back to default (=throw)
 
 // or set global custom handlers (this-context will be the instance the data shall be assigned to) 
 setUnknownDataKeyBehavior(function(dataKey, dataVal) {
-    console.warn('TODO');
-    if (dataKey !== 'foo' && !dataKey[0] === '_') {
+    console.warn('unknonwn key %s for class %s', dataKey. this.constructor.name);
+    if (dataKey[0] !== '_') {
         this[dataKey] = dataVal;
     }
 });
