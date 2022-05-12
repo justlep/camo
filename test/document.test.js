@@ -9,6 +9,7 @@ import {
 } from '../lib/validate.js';
 import {initMochaHooksForNedb} from './database.js';
 import {IS_BASE_DOCUMENT, IS_DOCUMENT, IS_EMBEDDED} from '../lib/symbols.js';
+import {setUnknownDataKeyBehavior} from '../lib/base-document.js';
 
 
 describe('Document', function () {
@@ -32,7 +33,7 @@ describe('Document', function () {
             expect(isDocument(user)).to.be.true;
             expect(isEmbeddedDocument(user)).to.be.false;
             expect(isReferenceable(user)).to.be.true;
-            
+
             expect(user[IS_DOCUMENT]).to.be.true;
             expect(user[IS_EMBEDDED]).to.be.undefined;
             expect(user[IS_BASE_DOCUMENT]).to.be.true;
@@ -109,8 +110,13 @@ describe('Document', function () {
             }).then(done, done);
         });
 
+    });
+    
+    describe('instantiation w/ unknown data keys', () => {
 
-        it('should throw on unknown data keys by default', () => {
+        afterEach(() => setUnknownDataKeyBehavior('default'));
+        
+        it('should throw by default', () => {
             class Foo extends Document {
                 static SCHEMA = {
                     name: String
@@ -118,7 +124,45 @@ describe('Document', function () {
             }
 
             expect(() => Foo.create({name: 'Tom'})).not.to.throw();
-            expect(() => Foo.create({name: 'Beelz', xxx: 666})).to.throw('Unknown key "xxx" in data object for new Foo instance');
+            expect(() => Foo.create({name: 'Beelz', xxx: 666})).to.throw('Unknown data key "xxx" for new Foo');
+        });
+        
+        it('should behave as configured by setUnknownDataKeyBehavior()', () => {
+            class Foo extends Document {
+                static SCHEMA = {
+                    name: String
+                };
+            }
+            
+            let foo;
+            
+            // expect 'throw' as default
+            expect(() => Foo.create({name: 'Tom'})).not.to.throw();
+            expect(() => Foo.create({name: 'Beelz', xxx: 666})).to.throw('Unknown data key "xxx" for new Foo');
+            
+            setUnknownDataKeyBehavior('throw');
+            expect(() => Foo.create({name: 'Tom'})).not.to.throw();
+            expect(() => Foo.create({name: 'Beelz', xxx: 666})).to.throw('Unknown data key "xxx" for new Foo');
+
+            setUnknownDataKeyBehavior('ignore');
+            expect(() => Foo.create({name: 'Tom'})).not.to.throw();
+            expect(() => foo = Foo.create({name: 'Beelz', xxx: 666})).not.to.throw();
+            assert.isUndefined(foo.xxx);
+            
+            setUnknownDataKeyBehavior('logAndIgnore');
+            expect(() => Foo.create({name: 'Tom'})).not.to.throw();
+            expect(() => foo = Foo.create({name: 'Beelz', xxx: 666})).not.to.throw();
+            assert.isUndefined(foo.xxx);
+            
+            setUnknownDataKeyBehavior('accept');
+            expect(() => Foo.create({name: 'Tom'})).not.to.throw();
+            expect(() => foo = Foo.create({name: 'Beelz', xxx: 666})).not.to.throw();
+            assert.equal(foo.xxx, 666);
+
+            setUnknownDataKeyBehavior('logAndAccept');
+            expect(() => Foo.create({name: 'Tom'})).not.to.throw();
+            expect(() => foo = Foo.create({name: 'Beelz', xxx: 666})).not.to.throw();
+            assert.equal(foo.xxx, 666);
         });
 
         it('can accept unknown data keys by overriding onUnknownData()', (done) => {
@@ -184,7 +228,7 @@ describe('Document', function () {
             }).then(done, done);
         });
 
-        it('should not restore or persist data that is not in the schema', (done) => {
+        it('should never cause unknown keys getting persisted', (done) => {
             const COMMON_COLLECTION_NAME = 'people99';
 
             let totalUnkown = 0,
