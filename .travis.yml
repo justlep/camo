@@ -1,6 +1,7 @@
 language: node_js
 node_js:
   - "14"
+  - "16"
 install:
   - npm i
   - npm i @justlep/nedb
@@ -9,3 +10,5 @@ script:
   - npm run lint
   - npm run test:memory-nedb-original
   - npm run test:memory-nedb-justlep
+  - npm run test:persistent-nedb-original
+  - npm run test:persistent-nedb-justlep
