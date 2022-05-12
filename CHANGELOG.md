@@ -22,6 +22,8 @@ Breaking Changes
   in a derived `Document`/`EmbeddedDocument` class. 
 * Deprecated schema definition within constructors (and/or by calling `instance.schema()`). 
   Preferring static field `SCHEMA` in document classes instead (#2).
+* Renamed `Client.dropDatabase` to `Client._dropDatabase`, marked it "internal" (for testing purposes only)
+  since there is no clean way of safely deleting entire persistent NeDB collections in the filesystem.    
 
 ## 0.12.5 (2022-04-22)
 

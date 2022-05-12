@@ -68,13 +68,10 @@ Changes:
   class Bar extends Document {
     static SCHEMA = {foo: Foo};
   }
+* `Client._dropDatabase()` is now private/internal (see CHANGELOG)
+
 # Camo
 
-**Camo needs your help!** Interested in contributing? [Let me know](mailto:s.w.robinson+camo@gmail.com)!
-
-Development supported by:
-
-- [HireRemote.io](https://hireremote.io?ref=github-camo)
 
 ## Jump To
 * <a href="#why-do-we-need-another-odm">Why do we need another ODM?</a>
