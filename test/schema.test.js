@@ -7,7 +7,7 @@ import {
     ST_IS_TYPED_ARRAY,
     SCHEMA_ALL_KEYS,
     SCHEMA_ARRAY_KEYS,
-    ST_IS_EMBED_ARRAY, SCHEMA_NON_REF_EMBD_KEYS, SCHEMA_REF_1_DOC_KEYS,
+    ST_IS_EMBED_ARRAY, SCHEMA_REF_1_DOC_KEYS,
     SCHEMA_REF_1_OR_N_EMBD_KEYS, SCHEMA_REF_N_DOCS_KEYS
 } from '../lib/symbols.js';
 
@@ -51,12 +51,11 @@ describe('Schema', function () {
             assert.isObject(s.embs);
             assert.isTrue(s.embs[ST_IS_EMBED_ARRAY]);
             assert.isTrue(s.embs.type[ST_IS_EMBED_ARRAY]);
-            assert.deepEqual(s[SCHEMA_ALL_KEYS], ['titles', 'firstName', 'lastName', 'embs']);
+            assert.deepEqual(s[SCHEMA_ALL_KEYS], ['_id', 'titles', 'firstName', 'lastName', 'embs']);
             assert.deepEqual(s[SCHEMA_REF_1_DOC_KEYS], []);
             assert.deepEqual(s[SCHEMA_REF_N_DOCS_KEYS], []);
             assert.deepEqual(s[SCHEMA_REF_1_OR_N_EMBD_KEYS], ['embs']);
             assert.deepEqual(s[SCHEMA_ARRAY_KEYS], ['titles', 'embs']);
-            assert.deepEqual(s[SCHEMA_NON_REF_EMBD_KEYS], ['titles', 'firstName', 'lastName']);
         });
 
         it('should prefer static SCHEMA field over instance as source of truth for schema definition', function () {
@@ -110,12 +109,11 @@ describe('Schema', function () {
             assert.isObject(s.embs);
             assert.isTrue(s.embs[ST_IS_EMBED_ARRAY]);
             assert.isTrue(s.embs.type[ST_IS_EMBED_ARRAY]);
-            assert.deepEqual(s[SCHEMA_ALL_KEYS], ['titles', 'firstName', 'lastName', 'embs']);
+            assert.deepEqual(s[SCHEMA_ALL_KEYS], ['_id', 'titles', 'firstName', 'lastName', 'embs']);
             assert.deepEqual(s[SCHEMA_REF_1_DOC_KEYS], []);
             assert.deepEqual(s[SCHEMA_REF_N_DOCS_KEYS], []);
             assert.deepEqual(s[SCHEMA_REF_1_OR_N_EMBD_KEYS], ['embs']);
             assert.deepEqual(s[SCHEMA_ARRAY_KEYS], ['titles', 'embs']);
-            assert.deepEqual(s[SCHEMA_NON_REF_EMBD_KEYS], ['titles', 'firstName', 'lastName']);
             
             assert.equal(user.firstName, undefined);
             assert.deepEqual(user.titles, []);
@@ -161,12 +159,11 @@ describe('Schema', function () {
             assert.isObject(s.foo);
             assert.isTrue(s.foo[ST_IS_CUSTOM_TYPE]);
             assert.isTrue(s.foo.type[ST_IS_CUSTOM_TYPE]);
-            assert.deepEqual(s[SCHEMA_ALL_KEYS], ['foo', 'bar']);
+            assert.deepEqual(s[SCHEMA_ALL_KEYS], ['_id', 'foo', 'bar']);
             assert.deepEqual(s[SCHEMA_REF_1_DOC_KEYS], []);
             assert.deepEqual(s[SCHEMA_REF_N_DOCS_KEYS], []);
             assert.deepEqual(s[SCHEMA_REF_1_OR_N_EMBD_KEYS], []);
             assert.deepEqual(s[SCHEMA_ARRAY_KEYS], []);
-            assert.deepEqual(s[SCHEMA_NON_REF_EMBD_KEYS], ['foo', 'bar']);
         });
         
         it('should ensure default arrays are always generated and never reused', () => {

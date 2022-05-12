@@ -587,6 +587,9 @@ describe('Embedded', function () {
                 }
             }
 
+            class SubPerson extends Person {
+            }
+            
             let person = Person.create({
                 name: 'Scott',
                 address: {
@@ -597,7 +600,9 @@ describe('Embedded', function () {
                 }
             });
 
-            person.save().then(function () {
+            let sub = SubPerson.create({name: 'subbi'});
+            
+            Promise.all([person.save(), sub.save()]).then(function () {
                 validateId(person);
                 expect(person.name).to.be.equal('Scott');
                 expect(person.address).to.be.an.instanceof(Address);
@@ -607,13 +612,18 @@ describe('Embedded', function () {
                 expect(person.address.isPoBox).to.be.equal(false);
 
                 let json = person.toJSON();
-
+                expect(json._id).not.to.be.undefined;
+                
                 expect(json.name).to.be.equal('Scott');
                 expect(json.address).to.not.be.an.instanceof(Address);
                 expect(json.address.street).to.be.equal('123 Fake St.');
                 expect(json.address.city).to.be.equal('Cityville');
                 expect(json.address.zipCode).to.be.equal(12345);
                 expect(json.address.isPoBox).to.be.equal(false);
+                
+                let subJson = sub.toJSON();
+                expect(subJson._id).not.to.be.undefined;
+                expect(subJson.name).to.equal('subbi');
             }).then(done, done);
         });
 
