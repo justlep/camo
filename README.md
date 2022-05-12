@@ -1,11 +1,11 @@
-# This is a fork of scottwrobinson's [camo](https://github.com/scottwrobinson/camo)
+# A completely reworked fork of scottwrobinson's [camo](https://github.com/scottwrobinson/camo)
 [![Build Status](https://api.travis-ci.com/justlep/camo.svg?branch=master)](https://travis-ci.com/github/justlep/camo)
 [![NPM Version](https://img.shields.io/npm/v/@justlep/camo.svg)](https://www.npmjs.com/package/@justlep/camo)
 [![Node.js Version](https://img.shields.io/node/v/@justlep/camo.svg)]()
 
 Changes: 
 * Complete code refactoring & optimization
-* allows using forks of NeDB, like [@justlep/nedb](https://github.com/justlep/nedb) instead of the original
+* allows using any fork of NeDB, like [@justlep/nedb](https://github.com/justlep/nedb)
   ```javascript
   import {Datastore} from '@justlep/nedb';
   import {connect} from '@justlep/camo';
@@ -20,7 +20,7 @@ Changes:
   ```
   
 **Breaking changes:**
-* Removed Mongo support for now, leaving NeDB stuff only
+* Removed Mongo support for now, leaving NeDB only
 * Removed `nedb` from `optionalDependencies`, must be installed manually:
   ```sh
   # for Node 14+/ESM (see code example above)
@@ -31,20 +31,8 @@ Changes:
   ```
 * Accessing `id` properties of `Document` or `EmbeddedDocument` no longer displays deprecation warnings, but will throw an Error.
 * Passing a collection name to `new MyDocument(collectionName)` now throws an `Error` (must override `static collectionName()` instead)
-* Documents now throw an Error upon creation with data containing keys that are
-  not defined in their schema. This behavior can be customized by overriding `onUnknownData(dataKey, val)`
-  in a derived `Document`/`EmbeddedDocument` class, e.g.
-  ```javascript
-  class Foo extends Document {
-    /** @override */
-    onUnknownData(dataKey, dataVal) {
-        this[dataKey] = dataVal; // silently accept unkown keys
-    }
-  }
-  
-  let foo = Foo.create({xxx: 666}); // does not throw
-  foo.xxx === 666; // true
-  ```
+* Documents now throw errors when created with data objects containing keys that are
+  not present in the schema. This behavior can be <a href="#behavior-on-unknown-data-keys">customized</a>. 
 * Schema definitions within constructors (and/or by calling `instance.schema()`) are now deprecated.
   Use a static field SCHEMA instead, e.g.
   ```javascript
@@ -68,6 +56,7 @@ Changes:
   class Bar extends Document {
     static SCHEMA = {foo: Foo};
   }
+  ```
 * `Client._dropDatabase()` is now private/internal (see CHANGELOG)
 
 # Camo
@@ -83,6 +72,7 @@ Changes:
     * <a href="#embedded-documents">Embedded Documents</a>
   * <a href="#creating-and-saving">Creating and Saving</a>
   * <a href="#loading">Loading</a>
+    * <a href="#behavior-on-unknown-data-keys">Behavior on unknown data keys</a> 
   * <a href="#deleting">Deleting</a>
   * <a href="#counting">Counting</a>
   * <a href="#hooks">Hooks</a>
@@ -93,7 +83,7 @@ Changes:
 * <a href="#copyright-license">Copyright & License</a>
 
 ## Why do we need another ODM?
-Short answer, we probably don't. Camo was created for two reasons: to bring traditional-style classes to [MongoDB](https://www.mongodb.com/) JavaScript, and to support [NeDB](https://github.com/louischatriot/nedb) as a backend (which is much like the SQLite-alternative to Mongo).
+Short answer, we probably don't. Camo was created for two reasons: ~~to bring traditional-style classes to [MongoDB](https://www.mongodb.com/) JavaScript, and~~ to support [NeDB](https://github.com/louischatriot/nedb) as a backend (which is much like the SQLite-alternative to Mongo).
 
 Throughout development this eventually turned in to a library full of [ES6](https://github.com/lukehoban/es6features) features. Coming from a Java background, its easier for me to design and write code in terms of classes, and I suspect this is true for many JavaScript beginners. While ES6 classes don't bring any new functionality to the language, they certainly do make it much easier to jump in to OOP with JavaScript, which is reason enough to warrent a new library, IMO.
 
@@ -108,9 +98,9 @@ So, why use Camo?
 \* Support coming soon.
 
 ## Install and Run
-To use Camo, you must first have installed **Node >2.0.x**, then run the following commands:
+To use Camo, you must first have installed **Node >=14**, then run the following commands:
 
-    npm install camo --save
+    npm install @justlep/camo --save
 
 And at least ONE of the following:
 
@@ -118,7 +108,12 @@ And at least ONE of the following:
 
     OR
 
-    npm install mongodb --save
+    npm install @justlep/nedb --save
+
+<!-- 
+   (mongo-support dropped for now..)  
+   npm install mongodb --save 
+-->
 
 ## Quick Start
 Camo was built with ease-of-use and ES6 in mind, so you might notice it has more of an OOP feel to it than many existing libraries and ODMs. Don't worry, focusing on object-oriented design doesn't mean we forgot about functional techniques or asynchronous programming. Promises are built-in to the API. Just about every call you make interacting with the database (find, save, delete, etc) will return a Promise. No more callback hell :)
@@ -128,47 +123,51 @@ For a short tutorial on using Camo, check out [this](http://stackabuse.com/getti
 ### Connect to the Database
 Before using any document methods, you must first connect to your underlying database. All supported databases have their own unique URI string used for connecting. The URI string usually describes the network location or file location of the database. However, some databases support more than just network or file locations. NeDB, for example, supports storing data in-memory, which can be specified to Camo via `nedb://memory`. See below for details:
 
+<!--
 - MongoDB: 
   - Format: mongodb://[username:password@]host[:port][/db-name]
   - Example: `var uri = 'mongodb://scott:abc123@localhost:27017/animals';`
+-->
 - NeDB:
-  - Format: nedb://[directory-path] OR nedb://memory
-  - Example: `var uri = 'nedb:///Users/scott/data/animals';`
+  - Format: `"nedb://[directory-path]"` OR `"nedb://memory"`
+  - Example: `const uri = 'nedb:///Users/scott/data/db-files';`
 
 So to connect to an NeDB database, use the following:
 
 ```javascript
-var connect = require('camo').connect;
+import {Datastore} from '@justlep/nedb';
+import {connect} from '@justlep/camo';
 
-var database;
-var uri = 'nedb:///Users/scott/data/animals';
-connect(uri).then(function(db) {
-    database = db;
-});
-```
+const database = await await connect('nedb:///path/to/dbfiles', Datastore);
+  
+// The Datastore argument is now mandatory.
+// For using the original 'nedb@1.8.0', you would do
+  
+import Datastore from 'nedb'; 
+const database = await connect('nedb:///path/to/dbfiles', Datastore);
+  ```
+
 
 ### Declaring Your Document
 All models must inherit from the `Document` class, which handles much of the interface to your backend NoSQL database.
 
 ```javascript
-var Document = require('camo').Document;
+import {Document} from '@justlep/camo';
 
 class Company extends Document {
-    constructor() {
-        super();
-
-        this.name = String;
-        this.valuation = {
+    static SCHEMA = {
+        name: String,
+        valuation: {
             type: Number,
             default: 10000000000,
             min: 0
-        };
-        this.employees = [String];
-        this.dateFounded = {
+        },
+        employees: [String],
+        dateFounded: {
             type: Date,
             default: Date.now
-        };
-    }
+        }
+    };
 
     static collectionName() {
         return 'companies';
@@ -176,52 +175,81 @@ class Company extends Document {
 }
 ```
 
-Notice how the schema is declared right in the constructor as member variables. All _public_ member variables (variables that don't start with an underscore [_]) are added to the schema.
+The schema is defined by a static `SCHEMA` property. 
+Schemas are analyzed **once per class** at the moment the first instance of the class (or a derived class) gets instantiated. 
+Changing `SCHEMA` thereafter will have no effect.  
+
 
 The name of the collection can be set by overriding the `static collectionName()` method, which should return the desired collection name as a string. If one isn't given, then Camo uses the name of the class and naively appends an 's' to the end to make it plural.
 
-Schemas can also be defined using the `this.schema()` method. For example, in the `constructor()` method you could use:
+The `SCHEMA` property can also be a function returning a schema object. 
+This allows for circular document-type references. For example:
 
 ```javascript
-this.schema({
-    name: String,
-    valuation: {
-        type: Number,
-        default: 10000000000,
-        min: 0
-    },
-    employees: [String],
-    dateFounded: {
-        type: Date,
-        default: Date.now
-    }
-});
+class Foo extends Document {
+    static SCHEMA = () => ({bar: Bar});
+}
+
+class Bar extends Document {
+    static SCHEMA = {foo: Foo};
+}
 ```
 
-Currently supported variable types are:
+
+Supported variable types are:
 
 - `String`
 - `Number`
 - `Boolean`
 - `Buffer`
 - `Date`
-- `Object`
-- `Array`
+- (`Object`)
+- (`Array`)
 - `EmbeddedDocument`
 - Document Reference
 
-Arrays can either be declared as either un-typed (using `Array` or `[]`), or typed (using the `[TYPE]` syntax, like `[String]`). Typed arrays are enforced by Camo on `.save()` and an `Error` will be thrown if a value of the wrong type is saved in the array. Arrays of references are also supported.
+Arrays either can be declared as either un-typed (using `Array` or `[]`), or typed (using the `[TYPE]` 
+syntax, like `[String]`). Typed arrays are enforced by Camo on `.save()` and an `Error` will be
+thrown if a value of the wrong type is saved in the array. Arrays of references are also supported.
 
-To declare a member variable in the schema, either directly assign it one of the types listed above, or assign it an object with options, like this:
+### Untyped arrays and "wildcard" objects
+
+Untyped arrays and `Object`-type fields require additional schema properties `fromData`, `toData` and `validate` for 
+sanitizing raw data to be stored to or restored from the database, and for validating the value before `save():`  
+
+Example:
 
 ```javascript
-this.primeNumber = {
-    type: Number,
-    default: 2,
-    min: 0,
-    max: 25,
-    choices: [2, 3, 5, 7, 11, 13, 17, 19, 23],
-    unique: true
+// the 'obj' property of these instances are saved as strings in the db 
+class CustomObjectModel extends Document {
+    static SCHEMA = {
+        obj: {
+            type: Object,
+            toData: JSON.stringify, // converts the current value into a format the db can save  
+            fromData: JSON.parse,   // parses the value coming from the database  
+            validate: (o) => o && typeof o === 'object' && o.hi === 'bye'
+        }
+    };
+}
+```
+
+### Declaring a member variable in the schema
+To declare a member variable in the schema, either directly assign it one of the types listed above, or assign it an object with options, like this:
+
+
+```javascript
+class Foo extends Document {
+    static SCHEMA = {
+        anyNumber: Number,
+        primeNumber: {
+            type: Number,
+            default: 2,
+            min: 0,
+            max: 25,
+            choices: [2, 3, 5, 7, 11, 13, 17, 19, 23],
+            unique: true
+        }
+    };
 }
 ```
 
@@ -241,22 +269,18 @@ To reference another document, just use its class name as the type.
 
 ```javascript
 class Dog extends Document {
-    constructor() {
-        super();
-
-        this.name = String;
-        this.breed = String;
-    }
+    static SCHEMA = {
+        name: String,
+        breed: String
+    };  
 }
 
 class Person extends Document {
-    constructor() {
-        super();
-
-        this.pet = Dog;
-        this.name = String;
-        this.age = String;
-    }
+    static SCHEMA = {
+        pet: Dog,
+        name: String,
+        age: Number
+    };
 
     static collectionName() {
         return 'people';
@@ -265,51 +289,46 @@ class Person extends Document {
 ```
 
 #### Embedded Documents
-Embedded documents can also be used within `Document`s. You must declare them separately from the main `Document` that it is being used in. `EmbeddedDocument`s are good for when you need an `Object`, but also need enforced schemas, validation, defaults, hooks, and member functions. All of the options (type, default, min, etc) mentioned above work on `EmbeddedDocument`s as well.
+Embedded documents can also be used within `Document`s. You must declare them separately from the main `Document` that it is being used in. `EmbeddedDocument`s are good for when you need an `Object`, but also need enforced schemas, validation, defaults, hooks, and member functions. 
+All of the options (`type`, `default`, `min`, etc) mentioned above work on `EmbeddedDocument`s as well.
 
 ```javascript
-var Document = require('camo').Document;
-var EmbeddedDocument = require('camo').EmbeddedDocument;
+import {Document, EmbeddedDocument} from '@justlep/camo';
 
 class Money extends EmbeddedDocument {
-    constructor() {
-        super();
-
-        this.value = {
+    static SCHEMA = {
+        value: {
             type: Number,
             choices: [1, 5, 10, 20, 50, 100]
-        };
-
-        this.currency = {
+        },
+        currency: {
             type: String,
             default: 'usd'
         }
-    }
+    };
 }
 
 class Wallet extends Document {
-    constructor() {
-        super();
-        this.contents = [Money];
-    }
+    static SCHEMA = {
+        contents: [Money]
+    };
 }
 
-var wallet = Wallet.create();
+let wallet = Wallet.create();
 wallet.contents.push(Money.create());
 wallet.contents[0].value = 5;
 wallet.contents.push(Money.create());
 wallet.contents[1].value = 100;
 
-wallet.save().then(function() {
-    console.log('Both Wallet and Money objects were saved!');
-});
+await wallet.save();
+console.log('Both Wallet and Money objects were saved!');
 ````
 
 ### Creating and Saving
 To create a new instance of our document, we need to use the `.create()` method, which handles all of the construction for us.
 
 ```javascript
-var lassie = Dog.create({
+let lassie = Dog.create({
     name: 'Lassie',
     breed: 'Collie'
 });
@@ -338,10 +357,9 @@ To retrieve an object, you have a few methods available to you.
 The `.findOne()` method will return the first document found, even if multiple documents match the query. `.find()` will return all documents matching the query. Each should be called as static methods on the document type you want to load.
 
 ```javascript
-Dog.findOne({ name: 'Lassie' }).then(function(l) {
-    console.log('Got Lassie!');
-    console.log('Her unique ID is', l._id);
-});
+let lassie = await Dog.findOne({ name: 'Lassie' });
+console.log('Got Lassie!');
+console.log('Her unique ID is', lassie._id);
 ```
 
 `.findOne()` currently accepts the following option:
@@ -363,6 +381,52 @@ Dog.findOne({ name: 'Lassie' }).then(function(l) {
 - `skip`: Skips the given number of documents and returns the rest
   - `Person.find({}, {skip: 5})` skips the first 5 `Person` objects and returns all others
 
+### Behavior on unknown data keys
+
+Refactorings in collections or Document classes may, over time, lead to NeDB data objects 
+containing "old" properties which are no longer part of a document's schema. Since it can't be
+considered safe in all cases to silently ignore or accept such "unknown data keys", the default
+behavior of `@justlep/camo` is now to throw an Error.
+
+This behavior can be configured globally by calling `setUnknownDataKeyBehavior()`:
+```javascript
+import {setUnknownDataKeyBehavior} from '@justlep/camo';
+
+setUnknownDataKeyBehavior('throw');  // throw with error message containg key + class name
+setUnknownDataKeyBehavior('ignore'); // silently ignore unknown data
+setUnknownDataKeyBehavior('accept'); // silently accept 
+setUnknownDataKeyBehavior('logAndAccept'); // accept and log key + class name to the console 
+setUnknownDataKeyBehavior('logAndIgnore'); // ignore and log key + class name to the console
+setUnknownDataKeyBehavior('default'); // switch back to default (=throw)  
+
+// or set global custom handlers (this-context will be the instance the data shall be assigned to) 
+setUnknownDataKeyBehavior(function(dataKey, dataVal) {
+    console.warn('TODO');
+    if (dataKey !== 'foo' && !dataKey[0] === '_') {
+        this[dataKey] = dataVal;
+    }
+});
+```
+
+Alternatively, you can override `onUnknownData()` for individual classes:
+```javascript
+class Foo extends Document {
+  static SCHEMA = {};
+  
+  /** @override */
+  onUnknownData(dataKey, dataVal) {
+      this[dataKey] = dataVal; // silently accept unkown keys
+  }
+}
+
+let foo = Foo.create({xxx: 666}); // won't throw
+foo.xxx === 666; // true
+```
+
+**Note:** only document properties mentioned in the schema will be persisted, regardless of the settings above.
+Accepting random data keys does not mean those properties will be saved or updated in the database. 
+
+
 ### Deleting
 To remove documents from the database, use one of the following:
 
@@ -374,18 +438,16 @@ To remove documents from the database, use one of the following:
 The `.delete()` method should only be used on an instantiated document with a valid `id`. The other three methods should be used on the class of the document(s) you want to delete.
 
 ```javascript
-Dog.deleteMany({ breed: 'Collie' }).then(function(numDeleted) {
-    console.log('Deleted', numDeleted, 'Collies from the database.');
-});
+let numDeleted = await Dog.deleteMany({ breed: 'Collie' });
+console.log(`Deleted ${numDeleted} Collies from the database.`);
 ```
 
 ### Counting
 To get the number of matching documents for a query without actually retrieving all of the data, use the `.count()` method.
 
 ```javascript
-Dog.count({ breed: 'Collie' }).then(function(count) {
-    console.log('Found', count, 'Collies.');
-});
+let totalCollies = await Dog.count({ breed: 'Collie' });
+console.log(`Found ${totalCollies} Collies`);
 ```
 
 ### Hooks
@@ -405,34 +467,19 @@ In order to create a hook, you must override a class method. The hooks currently
 Here is an example of using a hook (pre-delete, in this case):
 ```javascript
 class Company extends Document {
-    constructor() {
-        super();
-
-        this.employees = [Person]
-    }
-
-    static collectionName() {
-        return 'companies';
-    }
+    static SCHEMA = {
+        employees: [Person]
+    };
 
     preDelete() {
-        var deletes = [];
-        this.employees.forEach(function(e) {
-            var p = new Promise(function(resolve, reject) {
-                resolve(e.delete());
-            });
-
-            deletes.push(p);
-        });
-
-        return Promise.all(deletes);
+        return Promise.all(this.employees.map(emp => emp.delete()));
     }
 }
 ```
 
 The code above shows a pre-delete hook that deletes all the employees of the company before it itself is deleted. As you can see, this is much more convenient than needing to always remember to delete referenced employees in the application code.
 
-**Note**: The `.preDelete()` and `.postDelete()` hooks are _only_ called when calling `.delete()` on a Document instance. Calling `.deleteOne()` or `.deleteMany()` will **not** trigger the hook methods.
+**[!] Note**: The `.preDelete()` and `.postDelete()` hooks are _only_ called when calling `.delete()` on a Document instance. Calling `.deleteOne()` or `.deleteMany()` will **not** trigger the hook methods.
 
 ### Misc.
 - `camo.getClient()`: Retrieves the Camo database client
@@ -440,6 +487,8 @@ The code above shows a pre-delete hook that deletes all the employees of the com
 - `Document.toJSON()`: Serializes the given document to just the data, which includes nested and referenced data
 
 ## Transpiler Support
+_(This information may be obsolete)_
+
 While many transpilers won't have any problem with Camo, some need extra resources/plugins to work correctly:
 
 - Babel
@@ -449,7 +498,9 @@ While many transpilers won't have any problem with Camo, some need extra resourc
   - [IndefinitivelyTyped/camo](https://github.com/IndefinitivelyTyped/camo): Typings support for Camo (h/t [WorldMaker](https://github.com/WorldMaker))
 
 ## Contributing
-Feel free to open new issues or submit pull requests for Camo. If you'd like to contact me before doing so, feel free to get in touch (see Contact section below).
+Feel free to open new issues or submit pull requests for Camo. 
+
+https://github.com/justlep/camo/issues
 
 Before opening an issue or submitting a PR, I ask that you follow these guidelines:
 
@@ -466,15 +517,9 @@ Before opening an issue or submitting a PR, I ask that you follow these guidelin
 - Include updates to the README when needed.
 - Do not update the package version or CHANGELOG. I'll handle that for each release.
 
-## Contact
-You can contact me with questions, issues, or ideas at either of the following:
-
-- Email: [s.w.robinson+camo@gmail.com](mailto:s.w.robinson+camo@gmail.com)
-- Twitter: [@ScottWRobinson](https://twitter.com/ScottWRobinson)
-
-For short questions and faster responses, try Twitter.
-
 ## Copyright & License
+Copyright (c) 2022 Lennart Pegel
+
 Copyright (c) 2016 Scott Robinson
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
