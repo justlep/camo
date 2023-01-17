@@ -1,7 +1,8 @@
 import {expect} from 'chai';
 import {Document} from '../lib/document.js';
-import {validateId} from './util.js';
-import {initMochaHooksForNedb} from './database.js';
+import {resolveProjectPath, validateId} from './util.js';
+import {initMochaHooksForNedb, inMemory} from './database.js';
+import {readFileSync} from 'node:fs';
 
 
 describe('NeDbClient', function() {
@@ -113,7 +114,7 @@ describe('NeDbClient', function() {
             }).then(done, done);
         });
 
-        it('should accept documents with duplicate values in non-unique-indexed fields', function(done) {
+        it('should accept documents with duplicate values in non-unique, non-indexed fields', function(done) {
             class User extends Document {
                 static SCHEMA = {
                     name: String,
@@ -133,6 +134,37 @@ describe('NeDbClient', function() {
             user2.email = 'billy@example.com';
 
             Promise.all([user1.save(), user2.save()]).then(function() {
+                validateId(user1);
+                validateId(user2);
+                expect(user1.email).to.be.equal('billy@example.com');
+                expect(user2.email).to.be.equal('billy@example.com');
+            }).then(done, done);
+        });
+        
+        it('should accept documents with duplicate values in non-unique-indexed fields', function(done) {
+            class User extends Document {
+                static SCHEMA = {
+                    name: String,
+                    email: {
+                        type: String,
+                        indexed: true
+                    }
+                };
+            }
+
+            let user1 = User.create();
+            user1.name = 'Bill';
+            user1.email = 'billy@example.com';
+
+            let user2 = User.create();
+            user1.name = 'Billy';
+            user2.email = 'billy@example.com';
+
+            Promise.all([user1.save(), user2.save()]).then(function() {
+                if (!inMemory) {
+                    const dbFileContent = readFileSync(resolveProjectPath('test/nedbdata/users.db')).toString(); 
+                    expect(dbFileContent).to.contain('{"$$indexCreated":{"fieldName":"email","unique":false,"sparse":false}}');
+                }
                 validateId(user1);
                 validateId(user2);
                 expect(user1.email).to.be.equal('billy@example.com');

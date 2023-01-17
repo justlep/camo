@@ -2,7 +2,7 @@ import {connect} from '../lib/nedbclient.js';
 import {resolveProjectPath} from './util.js';
 import {readFileSync} from 'node:fs';
 
-const inMemory = process.env.npm_config_nedb_persistent !== 'true';
+export const inMemory = process.env.npm_config_nedb_persistent !== 'true';
 
 const nedbPackageName = (process.env.npm_config_nedb_version === 'justlep') ? '@justlep/nedb' : 'nedb';
 

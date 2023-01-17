@@ -1,6 +1,6 @@
 {
   "name": "@justlep/camo",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A class-based Object-Document Mapper (ODM) for NeDB",
   "type": "module",
   "main": "index.js",

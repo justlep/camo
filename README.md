@@ -18,6 +18,22 @@ Changes:
   import Datastore from 'nedb'; 
   await connect('nedb:///path/to/dbfiles', Datastore);
   ```
+* analog to the `"unique"` flag in Document schemas (ensuring a unique index for a field), there is now an 
+  additional `"indexed"` flag ensuring a non-unique index for the respective field, e.g.
+   ```javascript
+  class Book extends Document {
+    static SCHEMA = {
+      isbn: {
+        type: String,
+        unique: true        
+      },
+      year: {
+        type: Number,
+        indexed: true
+      }
+    }
+  }
+  ``` 
   
 **Breaking changes:**
 * Removed Mongo support for now, leaving NeDB only

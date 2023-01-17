@@ -1,4 +1,9 @@
 
+## 1.0.1 (2023-01-18)
+
+Added:
+* schema descriptors may have an `"indexed"` flag, ensuring a non-unique index on the respective field
+
 ## 1.0.0 (2022-05-12)
 
 Changes:
