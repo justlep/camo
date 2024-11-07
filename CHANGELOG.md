@@ -1,4 +1,9 @@
 
+## 1.2.1 (2024-11-07)
+
+Change:
+* `Document#purgeObsoleteProperties(props, returnIds, shouldCompactIfPurged)` can compact the db file if docs got changed 
+
 ## 1.1.1 (2024-11-07)
 
 Added:
