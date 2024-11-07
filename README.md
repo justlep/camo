@@ -47,8 +47,13 @@ Changes:
   // The db file's current latest entries will be lacking the void properties.
   ```
   IMPORTANT: Due to the nature of nedb, the db files after purging will still contain both the old version AND
-      the new, purged version of all updated documents until next startup/compacting, so purging itself won't 
-      suffice if you were to remove accidental confidential data from the db. 
+      the new, purged version of all updated documents until the next startup/compacting.
+  If you purged sensitive data, you can force immediate compaction by adding a third argument:
+  ```javascript
+  let {totalUpdates} = await MyDocClass.purgeObsoleteProperties(['voidProp1', 'voidProp2'], false, true);
+  // The db file's current latest entries will be lacking the void properties, 
+  // the db file is compacted
+  ```
   
 **Breaking changes:**
 * Removed Mongo support for now, leaving NeDB only
