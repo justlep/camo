@@ -1,19 +1,19 @@
 {
   "name": "@justlep/camo",
-  "version": "1.0.1",
+  "version": "1.1.1",
   "description": "A class-based Object-Document Mapper (ODM) for NeDB",
   "type": "module",
   "main": "index.js",
   "engines": {
-    "node": ">=14"
+    "node": ">=14.5.0"
   },
   "scripts": {
     "test": "mocha --reporter spec --timeout 10000 test/",
-    "test:memory-nedb-original": "npm --nedb_version=original run test",
-    "test:memory-nedb-justlep": "npm --nedb_version=justlep run test",
-    "test:persistent-nedb-original": "npm --nedb_version=original --nedb_persistent=true run test",
-    "test:persistent-nedb-justlep": "npm --nedb_version=justlep --nedb_persistent=true run test",
-    "lint": "eslint --max-warnings 5 --ext .js index.js lib/ test/"
+    "test:memory-nedb-original": "npm link nedb && npm --nedb_version=original run test",
+    "test:memory-nedb-justlep": "npm link @justlep/nedb && npm --nedb_version=justlep run test",
+    "test:persistent-nedb-original": "npm link nedb && npm --nedb_version=original --nedb_persistent=true run test",
+    "test:persistent-nedb-justlep": "npm link @justlep/nedb && npm --nedb_version=justlep --nedb_persistent=true run test",
+    "lint": "eslint --max-warnings 0 index.js lib/ test/"
   },
   "author": "Lennart Pegel <github@justlep.net>",
   "contributors": [
@@ -47,10 +47,11 @@
     "depd": "^2.0.0"
   },
   "devDependencies": {
-    "chai": "^4.3.6",
-    "eslint": "^8.16.0",
-    "eslint-plugin-log-filenames": "^1.0.6",
-    "mocha": "^10.0.0"
+    "@eslint/js": "^9.14.0",
+    "chai": "^5.1.2",
+    "eslint": "^9.14.0",
+    "globals": "^15.12.0",
+    "mocha": "^10.8.2"
   },
   "publishConfig": {
     "access": "public",

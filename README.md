@@ -1,5 +1,4 @@
 # A completely reworked fork of scottwrobinson's [camo](https://github.com/scottwrobinson/camo)
-[![Build Status](https://api.travis-ci.com/justlep/camo.svg?branch=master)](https://travis-ci.com/github/justlep/camo)
 [![NPM Version](https://img.shields.io/npm/v/@justlep/camo.svg)](https://www.npmjs.com/package/@justlep/camo)
 [![Node.js Version](https://img.shields.io/node/v/@justlep/camo.svg)]()
 
@@ -34,6 +33,22 @@ Changes:
     }
   }
   ``` 
+* After removing properties from a document schema, those now-void properties may remain in the db file entries since camo
+  only updates values for schema properties. To ensure db files don't get messed up over time with obsolete properties, 
+  you should purge obsolete properties on application startup or similar:
+  ```javascript
+  setUnknownDataKeyBehavior('logAndIgnore');
+  // Regardless of the handler configured above, the unknown data key behavior is DISABLED during the purge 
+  // (i.e. no logging, no throwing whatsoever ).
+  // The behavior is restored to the above one after the purge.
+  
+  let {totalUpdates, ids} = await MyDocClass.purgeObsoleteProperties(['voidProp1', 'voidProp2'], true);
+  // ids == array of changed documents' ids (or null if last argument is false)
+  // The db file's current latest entries will be lacking the void properties.
+  ```
+  IMPORTANT: Due to the nature of nedb, the db files after purging will still contain both the old version AND
+      the new, purged version of all updated documents until next startup/compacting, so purging itself won't 
+      suffice if you were to remove accidental confidential data from the db. 
   
 **Breaking changes:**
 * Removed Mongo support for now, leaving NeDB only

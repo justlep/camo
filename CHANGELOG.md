@@ -1,4 +1,9 @@
 
+## 1.1.1 (2024-11-07)
+
+Added:
+* static method `purgeObsoleteProperties()` of `Document`, allowing to remove properties from the database file when they're no longer part of the schema
+
 ## 1.0.1 (2023-01-18)
 
 Added:

@@ -1,11 +1,9 @@
 node_modules/
 npm-debug.log
-.travis.yml
 package-lock.json
 test/
 .idea
 *.tgz
 tmp4later
-test/nedbdata/
 .editorconfig
-.eslintrc
+eslint.config.js
