@@ -1,4 +1,10 @@
 
+## 1.2.2 (2025-01-24)
+
+Changes:
+* bumped dependencies
+* migrated tests from `mocha` to `vitest`  
+
 ## 1.2.1 (2024-11-07)
 
 Change:
@@ -39,7 +45,7 @@ Breaking Changes:
   Only exception: the schema's `default` value (or function return value) may still be string/number
   and be auto-converted to `Date` on Document creation. 
 * Documents now throw by default if created with data containing keys which are
-  not defined in the schema. This behavior can be customized either globally globally via `setUnknownDataKeyBehavior()`,
+  not defined in the schema. This behavior can be customized either globally via `setUnknownDataKeyBehavior()`,
   or by overriding `onUnknownData(dataKey, val)` in a derived `Document`/`EmbeddedDocument` class
 * Deprecated schema definition within constructors (and/or by calling `instance.schema()`). 
   Preferring static field `SCHEMA` in document classes instead (#2).

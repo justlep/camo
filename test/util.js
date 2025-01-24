@@ -1,9 +1,7 @@
-import {expect, config}  from 'chai';
-import {join, resolve} from 'path';
-import {fileURLToPath} from 'url';
+import {expect} from 'vitest';
+import {join, resolve} from 'node:path';
+import {fileURLToPath} from 'node:url';
 import {Document} from '../lib/document.js';
-
-config.truncateThreshold = 0; // disable '...' truncating in chai console output
 
 const PROJECT_ROOT_PATH = resolve(fileURLToPath(import.meta.url), '../..');
 
@@ -14,10 +12,10 @@ const PROJECT_ROOT_PATH = resolve(fileURLToPath(import.meta.url), '../..');
 export const resolveProjectPath = (relPath) => relPath ? join(PROJECT_ROOT_PATH, relPath) : PROJECT_ROOT_PATH;
 
 export const validateId = function(obj) {
-    expect(obj).to.not.be.null;
-    expect(obj).to.be.a('object');
-    expect(obj._id.toString()).to.be.a('string');
-    expect(obj._id.toString()).to.have.length.of.at.least(1);
+    expect(obj).not.toBeNull();
+    expect(obj).toBeTypeOf('object');
+    expect(obj._id.toString()).toBeTypeOf('string');
+    expect(obj._id.toString().length).toBeGreaterThanOrEqual(1);
 };
 
 export class Data extends Document {

@@ -1,4 +1,4 @@
-import {expect} from 'chai';
+import {it, describe, expect} from 'vitest';
 import {Document} from '../lib/document.js';
 import {EmbeddedDocument} from '../lib/embedded-document.js';
 import {validateId} from './util.js';
@@ -11,7 +11,7 @@ describe('Issues', function () {
 
 
     describe('#4', function () {
-        it('should not load duplicate references in array when only one reference is present', function (done) {
+        it('should not load duplicate references in array when only one reference is present', async () => {
             /* 
              * This issue happens when there are multiple objects in the database,
              * each object has an array of references, and at least two of the
@@ -39,7 +39,7 @@ describe('Issues', function () {
             let eye1 = Eye.create({color: 'blue'});
             let eye2 = Eye.create({color: 'brown'});
 
-            eye1.save().then(function (e) {
+            await eye1.save().then(function (e) {
                 validateId(e);
                 return eye2.save();
             }).then(function (e) {
@@ -68,12 +68,12 @@ describe('Issues', function () {
                 // ...and that we have the correct eyes
                 expect(String(e1._id)).to.be.equal(String(eye1._id));
                 expect(String(e2._id)).to.be.equal(String(eye2._id));
-            }).then(done, done);
+            });
         });
     });
 
     describe('#5', function () {
-        it('should allow multiple references to the same object in same array', function (done) {
+        it('should allow multiple references to the same object in same array', async () => {
             /* 
              * This issue happens when an object has an array of
              * references and there are multiple references to the
@@ -99,7 +99,7 @@ describe('Issues', function () {
             let user = User.create();
             let eye = Eye.create({color: 'blue'});
 
-            eye.save().then(function (e) {
+            await eye.save().then(function (e) {
                 validateId(e);
                 user.eyes.push(eye, eye);
                 return user.save();
@@ -115,12 +115,12 @@ describe('Issues', function () {
                 });
 
                 expect(eyeRefs).to.include(eye._id);
-            }).then(done, done);
+            });
         });
     });
 
     describe('#8', function () {
-        it('should use virtuals when initializing instance with data', function (done) {
+        it('should use virtuals when initializing instance with data', () => {
             /* 
              * This issue happens when a model has virtual setters
              * and the caller tries to use those setters during
@@ -156,13 +156,11 @@ describe('Issues', function () {
 
             expect(user.firstName).to.be.equal('Billy');
             expect(user.lastName).to.be.equal('Bob');
-
-            done();
         });
     });
 
     describe('#20', function () {
-        it('should not alias _id to id in queries and returned documents', function (done) {
+        it('should not alias _id to id in queries and returned documents', async () => {
             /* 
              * Camo inconsistently aliases the '_id' field to 'id'. When
              * querying, we must use '_id', but documents are returned
@@ -182,7 +180,7 @@ describe('Issues', function () {
                 name: 'Billy Bob'
             });
 
-            user.save().then(function () {
+            await user.save().then(function () {
                 validateId(user);
 
                 //expect(user.id).to.not.exist;
@@ -199,7 +197,7 @@ describe('Issues', function () {
                 //expect(u.id).to.not.exist;
                 expect(u).to.exist;
                 validateId(user);
-            }).then(done, done);
+            });
         });
     });
 
@@ -208,7 +206,7 @@ describe('Issues', function () {
          * Changes made to the model in postValidate and preSave hooks
          * should be saved to the database
          */
-        it('should save changes made in postValidate hook', function (done) {
+        it('should save changes made in postValidate hook', async () => {
             class Person extends Document {
                 static SCHEMA = () => ({
                     postValidateChange: {
@@ -248,7 +246,7 @@ describe('Issues', function () {
             person.pet = Pet.create();
             person.pets.push(Pet.create());
 
-            person.save().then(function () {
+            await person.save().then(function () {
                 validateId(person);
                 return Person
                     .findOne({_id: person._id}, {populate: true})
@@ -258,10 +256,10 @@ describe('Issues', function () {
                         expect(p.pets[0].postValidateChange).to.be.equal(true);
                         expect(p.pets[1].postValidateChange).to.be.equal(true);
                     });
-            }).then(done, done);
+            });
         });
 
-        it('should save changes made in preSave hook', function (done) {
+        it('should save changes made in preSave hook', async () => {
             class Person extends Document {
                 static SCHEMA = () => ({
                     preSaveChange: {
@@ -301,7 +299,7 @@ describe('Issues', function () {
             person.pet = Pet.create();
             person.pets.push(Pet.create());
 
-            person.save().then(function () {
+            await person.save().then(function () {
                 validateId(person);
                 return Person
                     .findOne({_id: person._id}, {populate: true})
@@ -311,12 +309,12 @@ describe('Issues', function () {
                         expect(p.pets[0].preSaveChange).to.be.equal(true);
                         expect(p.pets[1].preSaveChange).to.be.equal(true);
                     });
-            }).then(done, done);
+            });
         });
     });
 
     describe('#55', function () {
-        it('should return updated data on findOneAndUpdate when updating nested data', function (done) {
+        it('should return updated data on findOneAndUpdate when updating nested data', async () => {
             /* 
              * When updating nested data with findOneAndUpdate,
              * the document returned to you should contain
@@ -351,18 +349,18 @@ describe('Issues', function () {
                 }
             });
 
-            person.save().then(function (person) {
+            await person.save().then(function (person) {
                 return Person.findOneAndUpdate({_id: person._id}, {name: 'John Derp', 'contact.phone': '0123456789'});
             }).then(function (person) {
                 expect(person.name).to.be.equal('John Derp');
                 expect(person.contact.email).to.be.equal('john@doe.info');
                 expect(person.contact.phone).to.be.equal('0123456789');
-            }).then(done, done);
+            });
         });
     });
 
     describe('#57', function () {
-        it('should not save due to Promise.reject in hook', function (done) {
+        it('should not save due to Promise.reject in hook', async () => {
             /* 
              * Rejecting a Promise inside of a pre-save hook should
              * cause the save to be aborted, and the .caught() method
@@ -381,11 +379,11 @@ describe('Issues', function () {
                 }
             }
 
-            Foo.create({bar: 'bar'}).save().then(function (foo) {
+            await Foo.create({bar: 'bar'}).save().then(function (foo) {
                 expect.fail(null, Error, 'Expected error, but got none.');
             }).catch(function (error) {
                 expect(error).to.be.equal('DO NOT SAVE');
-            }).then(done, done);
+            });
         });
     });
 });

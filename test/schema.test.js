@@ -1,7 +1,7 @@
 import {Document} from '../lib/document.js';
 import {initMochaHooksForNedb} from './database.js';
 import {EmbeddedDocument} from '../lib/embedded-document.js';
-import {expect, assert} from 'chai';
+import {it, describe, expect, assert} from 'vitest';
 import {
     ST_IS_CUSTOM_TYPE,
     ST_IS_TYPED_ARRAY,

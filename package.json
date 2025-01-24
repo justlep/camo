@@ -1,6 +1,6 @@
 {
   "name": "@justlep/camo",
-  "version": "1.2.1",
+  "version": "1.2.2",
   "description": "A class-based Object-Document Mapper (ODM) for NeDB",
   "type": "module",
   "main": "index.js",
@@ -8,7 +8,7 @@
     "node": ">=14.5.0"
   },
   "scripts": {
-    "test": "mocha --reporter spec --timeout 10000 test/",
+    "test": "vitest --no-file-parallelism --environment=node --hookTimeout 10000 --dir test/ run",
     "test:memory-nedb-original": "npm link nedb && npm --nedb_version=original run test",
     "test:memory-nedb-justlep": "npm link @justlep/nedb && npm --nedb_version=justlep run test",
     "test:persistent-nedb-original": "npm link nedb && npm --nedb_version=original --nedb_persistent=true run test",
@@ -47,11 +47,10 @@
     "depd": "^2.0.0"
   },
   "devDependencies": {
-    "@eslint/js": "^9.14.0",
-    "chai": "^5.1.2",
-    "eslint": "^9.14.0",
-    "globals": "^15.12.0",
-    "mocha": "^10.8.2"
+    "@eslint/js": "^9.18.0",
+    "eslint": "^9.18.0",
+    "globals": "^15.14.0",
+    "vitest": "^3.0.4"
   },
   "publishConfig": {
     "access": "public",

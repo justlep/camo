@@ -1,23 +1,22 @@
-import {expect} from 'chai';
 import {validateId} from './util.js';
 import {Foo} from './cyclic/foo.js';
 import {Bar} from './cyclic/bar.js';
 import {initMochaHooksForNedb} from './database.js';
+import {it, describe, expect} from 'vitest';
 
 
 describe('Cyclic', function () {
 
     initMochaHooksForNedb();
-    
 
     describe('schema', function () {
-        it('should allow cyclic dependencies', function (done) {
+        it('should allow cyclic dependencies', async () => {
             let f = Foo.create();
             f.num = 26;
             let b = Bar.create();
             b.num = 99;
 
-            f.save().then(function (foo) {
+            await f.save().then(function (foo) {
                 b.foo = foo;
                 return b.save();
             }).then(function (bar) {
@@ -36,7 +35,7 @@ describe('Cyclic', function () {
                 validateId(bar.foo);
                 expect(bar.num).to.be.equal(99);
                 expect(bar.foo.num).to.be.equal(26);
-            }).then(done, done);
+            });
 
         });
     });

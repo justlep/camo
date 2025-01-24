@@ -1,4 +1,4 @@
-import {assert} from 'chai';
+import {it, describe, assert} from 'vitest';
 import {isDate, isNumber} from '../lib/validate.js';
 
 describe('validate', () => {

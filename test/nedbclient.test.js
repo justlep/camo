@@ -1,4 +1,4 @@
-import {expect} from 'chai';
+import {it, describe, expect} from 'vitest';
 import {Document} from '../lib/document.js';
 import {resolveProjectPath, validateId} from './util.js';
 import {initMochaHooksForNedb, inMemory} from './database.js';
@@ -11,7 +11,7 @@ describe('NeDbClient', function() {
     
     
     /*describe('#dropDatabase()', function() {
-        it('should drop the database and delete all its data', function(done) {
+        it('should drop the database and delete all its data', async () => {
 
             console.log('here-2');
 
@@ -20,7 +20,7 @@ describe('NeDbClient', function() {
 
             console.log('here-22');
 
-            data1.save().then(function(d) {
+            await data1.save().then(function(d) {
                 console.log('here-1');
                 validateId(d);
                 return data2.save();
@@ -60,12 +60,13 @@ describe('NeDbClient', function() {
                         resolve();
                     });
                 });
-            }).then(done, done);
+            });
         });
     });*/
 
     describe('id', function() {
-        it('should allow custom _id values', function(done) {
+        
+        it('should allow custom _id values', async () => {
             class School extends Document {
                 static SCHEMA = {
                     name: String
@@ -76,19 +77,20 @@ describe('NeDbClient', function() {
             school._id = '1234567890abcdef';
             school.name = 'South Park Elementary';
 
-            school.save().then(function() {
+            await school.save().then(function() {
                 validateId(school);
                 expect(school._id).to.be.equal('1234567890abcdef');
                 return School.findOne();
             }).then(function(s) {
                 validateId(s);
                 expect(s._id).to.be.equal('1234567890abcdef');
-            }).then(done, done);
+            });
         });
+        
     });
 
-    describe('indexes', function() {
-        it('should reject documents with duplicate values in unique-indexed fields', function(done) {
+    describe('indexes', async () => {
+        it('should reject documents with duplicate values in unique-indexed fields', async () => {
             class User extends Document {
                 static SCHEMA = {
                     name: String,
@@ -107,14 +109,14 @@ describe('NeDbClient', function() {
             user1.name = 'Billy';
             user2.email = 'billy@example.com';
 
-            Promise.all([user1.save(), user2.save()]).then(function() {
+            await Promise.all([user1.save(), user2.save()]).then(function() {
                 expect.fail(null, Error, 'Expected error, but got none.');
             }).catch(function(error) {
                 expect(error.errorType).to.be.equal('uniqueViolated');
-            }).then(done, done);
+            });
         });
 
-        it('should accept documents with duplicate values in non-unique, non-indexed fields', function(done) {
+        it('should accept documents with duplicate values in non-unique, non-indexed fields', async () => {
             class User extends Document {
                 static SCHEMA = {
                     name: String,
@@ -133,15 +135,15 @@ describe('NeDbClient', function() {
             user1.name = 'Billy';
             user2.email = 'billy@example.com';
 
-            Promise.all([user1.save(), user2.save()]).then(function() {
+            await Promise.all([user1.save(), user2.save()]).then(function() {
                 validateId(user1);
                 validateId(user2);
                 expect(user1.email).to.be.equal('billy@example.com');
                 expect(user2.email).to.be.equal('billy@example.com');
-            }).then(done, done);
+            });
         });
         
-        it('should accept documents with duplicate values in non-unique-indexed fields', function(done) {
+        it('should accept documents with duplicate values in non-unique-indexed fields', async () => {
             class User extends Document {
                 static SCHEMA = {
                     name: String,
@@ -160,7 +162,7 @@ describe('NeDbClient', function() {
             user1.name = 'Billy';
             user2.email = 'billy@example.com';
 
-            Promise.all([user1.save(), user2.save()]).then(function() {
+            await Promise.all([user1.save(), user2.save()]).then(function() {
                 if (!inMemory) {
                     const dbFileContent = readFileSync(resolveProjectPath('test/nedbdata/users.db')).toString(); 
                     expect(dbFileContent).to.contain('{"$$indexCreated":{"fieldName":"email","unique":false,"sparse":false}}');
@@ -169,7 +171,7 @@ describe('NeDbClient', function() {
                 validateId(user2);
                 expect(user1.email).to.be.equal('billy@example.com');
                 expect(user2.email).to.be.equal('billy@example.com');
-            }).then(done, done);
+            });
         });
     });
 });
